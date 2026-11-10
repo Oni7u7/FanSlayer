@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react'
+import { createPixelScene } from './pixelScene'
 import './ambient.css'
 
 function useIsMobile() {
@@ -14,17 +15,17 @@ function useIsMobile() {
 }
 
 /**
- * Fondo 3D único de la app (capa fija detrás de todo).
+ * Fondo único de la app: cielo de estrellas pixel (capa lejana) y túnel de marcos
+ * cuadrados (capa cercana). Cada capa se desplaza distinto con el puntero y el scroll.
  * variant: "full" en la landing, "calm" en las pantallas de trabajo.
- * Capas: aurora (lejana) → escena three.js (media) → haces de luz (cercana) → viñeta y grano.
  */
 export default function AmbientBackground({ variant = 'full' }) {
   const reduce = useReducedMotion() ?? false
   const mobile = useIsMobile()
-  const canvasRef = useRef(null)
+  const farRef = useRef(null)
+  const nearRef = useRef(null)
   const sceneRef = useRef(null)
 
-  // Parallax: puntero (solo puntero fino) + scroll, suavizados con spring
   const rx = useMotionValue(0)
   const ry = useMotionValue(0)
   const px = useSpring(rx, { stiffness: 40, damping: 18 })
@@ -42,66 +43,43 @@ export default function AmbientBackground({ variant = 'full' }) {
     return () => window.removeEventListener('pointermove', onMove)
   }, [reduce, rx, ry])
 
-  // Capas CSS con parallax distinto (la lejana se mueve poco, la cercana más)
-  const farX = useTransform(px, (v) => (reduce ? 0 : v * -14))
-  const farY = useTransform([py, scroll], ([a, s]) => (reduce ? 0 : a * -10 - s * 60))
-  const nearX = useTransform(px, (v) => (reduce ? 0 : v * 28))
-  const nearY = useTransform([py, scroll], ([a, s]) => (reduce ? 0 : a * 18 - s * 160))
+  // Parallax por profundidad: las estrellas se mueven poco, el túnel más
+  const farX = useTransform(px, (v) => (reduce ? 0 : v * -8))
+  const farY = useTransform([py, scroll], ([a, s]) => (reduce ? 0 : a * -6 - s * 40))
+  const nearY = useTransform(scroll, (s) => (reduce ? 0 : s * -120))
 
-  // Escena three.js cargada en diferido para no frenar el primer render
   useEffect(() => {
-    let cancelled = false
-    let handle = null
-    import('./stageScene').then(({ createStageScene }) => {
-      if (cancelled || !canvasRef.current) return
-      try {
-        handle = createStageScene(canvasRef.current, {
-          mobile,
-          reduce,
-          variant,
-          input: { px: () => (reduce ? 0 : px.get()), py: () => (reduce ? 0 : py.get()), scroll: () => (reduce ? 0 : scroll.get()) },
-        })
-        sceneRef.current = handle
-      } catch (err) {
-        // Sin WebGL: quedan la aurora y los haces, que son CSS
-        console.warn('Fondo 3D sin WebGL:', err)
+    if (!farRef.current || !nearRef.current) return
+    const scene = createPixelScene(
+      { far: farRef.current, near: nearRef.current },
+      {
+        mobile,
+        reduce,
+        variant,
+        input: { px: () => (reduce ? 0 : px.get()), py: () => (reduce ? 0 : py.get()) },
       }
-    })
+    )
+    sceneRef.current = scene
     const mq = window.matchMedia('(prefers-color-scheme: light)')
-    const onScheme = () => sceneRef.current?.refreshColors()
+    const onScheme = () => scene.refreshColors()
     mq.addEventListener('change', onScheme)
     return () => {
-      cancelled = true
       mq.removeEventListener('change', onScheme)
-      handle?.dispose()
+      scene.dispose()
       sceneRef.current = null
     }
     // variant se aplica con setVariant para no recrear la escena
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mobile, reduce, px, py, scroll])
+  }, [mobile, reduce, px, py])
 
   useEffect(() => {
     sceneRef.current?.setVariant(variant)
   }, [variant])
 
-  const animate = reduce ? '' : ' amb-animate'
-
   return (
     <div aria-hidden="true" className={`amb-root amb-${variant}`}>
-      <motion.div className="amb-aurora" style={{ x: farX, y: farY }}>
-        <span className={`amb-blob amb-blob-1${animate}`} />
-        <span className={`amb-blob amb-blob-2${animate}`} />
-        {!mobile && <span className={`amb-blob amb-blob-3${animate}`} />}
-      </motion.div>
-
-      <canvas ref={canvasRef} className="amb-canvas" />
-
-      <motion.div className="amb-beams" style={{ x: nearX, y: nearY }}>
-        <span className={`amb-beam amb-beam-1${animate}`} />
-        {!mobile && <span className={`amb-beam amb-beam-2${animate}`} />}
-      </motion.div>
-
-      <div className="amb-grain" />
+      <motion.canvas ref={farRef} className="amb-canvas amb-far" style={{ x: farX, y: farY }} />
+      <motion.canvas ref={nearRef} className="amb-canvas amb-near" style={{ y: nearY }} />
       <div className="amb-vignette" />
     </div>
   )
