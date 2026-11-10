@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /dev-preview.html
+
+Sitemap: https://fan-slayer.vercel.app/sitemap.xml
