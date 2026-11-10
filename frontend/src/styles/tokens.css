@@ -1,0 +1,142 @@
+/*
+ * Sistema de diseño FanSlayer: "Concierto nocturno en el bosque".
+ * Base: UI/UX Pro Max (Pixel Art, neón rojo/azul + verde de puntaje sobre navy),
+ * adaptado al escenario del juego: rosa de reflector, cian de la cascada,
+ * verde de la barra de vida y dorado del puntaje. Ver design-system/fanslayer/MASTER.md.
+ */
+:root {
+  color-scheme: dark;
+
+  /* Superficies */
+  --bg: #0a0e1a;
+  --bg-deep: #05070f;
+  --surface: #121829;
+  --surface-2: #19213a;
+  --surface-glass: color-mix(in srgb, #121829 72%, transparent);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  /* Texto */
+  --text: #f3f1ea;
+  --text-muted: #a7b0c8;
+  --text-faint: #7c86a3;
+
+  /* Marca */
+  --gold: #ffcf5c;          /* puntaje, precios, CTA principal */
+  --on-gold: #1c1404;
+  --gold-strong: #e8a92c;
+  --pink: #ff5d8f;          /* reflectores, combo */
+  --on-pink: #1d0710;
+  --cyan: #3dd6f5;          /* cascada, información */
+  --leaf: #7ee081;          /* vida, éxito */
+  --danger: #ff6b6b;
+
+  --gold-subtle: color-mix(in srgb, var(--gold) 14%, transparent);
+  --pink-subtle: color-mix(in srgb, var(--pink) 16%, transparent);
+  --cyan-subtle: color-mix(in srgb, var(--cyan) 14%, transparent);
+  --leaf-subtle: color-mix(in srgb, var(--leaf) 14%, transparent);
+  --danger-subtle: color-mix(in srgb, var(--danger) 14%, transparent);
+
+  --ring: var(--cyan);
+
+  /* Tipografía */
+  --font-display: 'Press Start 2P', 'Courier New', monospace;
+  --font-body: 'Space Grotesk Variable', system-ui, sans-serif;
+  --font-mono: 'VT323', ui-monospace, monospace;
+
+  --fs-12: 0.75rem;
+  --fs-14: 0.875rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-32: 2rem;
+  --fs-display: clamp(1.625rem, 3.3vw, 3rem);
+  --fs-title: clamp(1.25rem, 2.6vw, 2rem);
+
+  /* Espaciado (múltiplos de 4/8) */
+  --s-4: 4px;
+  --s-8: 8px;
+  --s-12: 12px;
+  --s-16: 16px;
+  --s-24: 24px;
+  --s-32: 32px;
+  --s-48: 48px;
+  --s-64: 64px;
+  --s-96: 96px;
+  --s-128: 128px;
+
+  /* Radios: casi rectos, guiño pixel sin encerrar */
+  --r-4: 4px;
+  --r-8: 8px;
+  --r-12: 12px;
+  --r-pill: 999px;
+
+  /* Sombras teñidas con el fondo */
+  --shadow-1: 0 2px 8px color-mix(in srgb, var(--bg-deep) 60%, transparent);
+  --shadow-2: 0 18px 50px color-mix(in srgb, var(--bg-deep) 70%, transparent);
+  --glow-gold: 0 0 0 1px color-mix(in srgb, var(--gold) 40%, transparent), 0 10px 30px color-mix(in srgb, var(--gold) 22%, transparent);
+
+  /* Movimiento */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur: 250ms;
+
+  --max: 1240px;
+  --nav-h: 64px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+    --bg: #f2f4fa;
+    --bg-deep: #dfe4f2;
+    --surface: #ffffff;
+    --surface-2: #eef1f8;
+    --surface-glass: color-mix(in srgb, #ffffff 78%, transparent);
+    --border: rgba(16, 22, 44, 0.1);
+    --border-strong: rgba(16, 22, 44, 0.22);
+
+    --text: #10162c;
+    --text-muted: #464f6b;
+    --text-faint: #5d6680;
+
+    --gold: #f2b733;
+    --on-gold: #1c1404;
+    --gold-strong: #8a5a00;
+    --pink: #c8235a;
+    --on-pink: #ffffff;
+    --cyan: #0a7ea4;
+    --leaf: #2e7d32;
+    --danger: #c62828;
+    --ring: #0a7ea4;
+  }
+}
+
+/* Utilidades de texto */
+.t-display { font-family: var(--font-display); font-size: var(--fs-display); line-height: 1.25; letter-spacing: -0.01em; }
+.t-title { font-family: var(--font-display); font-size: var(--fs-title); line-height: 1.4; }
+.t-body { font-family: var(--font-body); font-size: var(--fs-16); line-height: 1.65; color: var(--text-muted); }
+.t-lead { font-family: var(--font-body); font-size: clamp(1.0625rem, 1.4vw, 1.25rem); line-height: 1.6; color: var(--text-muted); }
+.t-label { font-family: var(--font-body); font-size: var(--fs-14); font-weight: 600; color: var(--text-muted); }
+.t-eyebrow { font-family: var(--font-body); font-size: var(--fs-12); font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cyan); }
+.t-mono { font-family: var(--font-mono); font-size: 1.25em; line-height: 1; letter-spacing: 0.02em; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: var(--s-8);
+  left: var(--s-8);
+  z-index: 100;
+  padding: var(--s-12) var(--s-16);
+  background: var(--gold);
+  color: var(--on-gold);
+  font-weight: 700;
+  border-radius: var(--r-8);
+  transform: translateY(-200%);
+}
+.skip-link:focus { transform: none; }

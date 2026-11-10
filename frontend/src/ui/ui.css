@@ -1,0 +1,142 @@
+/* Componentes base: solo tokens, sin colores sueltos. */
+
+/* ---------- Botón ---------- */
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-8);
+  min-height: 48px;
+  padding: 0 var(--s-24);
+  border: 0;
+  border-radius: var(--r-8);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-family: var(--font-display);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-sm { min-height: 44px; padding: 0 var(--s-16); font-size: 12px; }
+
+.btn-primary {
+  --btn-bg: var(--gold);
+  --btn-fg: var(--on-gold);
+  box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--gold-strong) 80%, transparent), var(--shadow-1);
+}
+.btn-primary:hover:not(:disabled) { box-shadow: inset 0 -3px 0 var(--gold-strong), var(--glow-gold); }
+
+.btn-secondary {
+  --btn-fg: var(--text);
+  box-shadow: inset 0 0 0 2px var(--border-strong);
+  background: var(--surface-glass);
+  backdrop-filter: blur(8px);
+}
+.btn-secondary:hover:not(:disabled) { box-shadow: inset 0 0 0 2px var(--text); }
+
+.btn-ghost { --btn-fg: var(--text-muted); }
+.btn-ghost:hover:not(:disabled) { --btn-fg: var(--text); background: var(--surface-2); }
+
+.btn:disabled, .btn[aria-disabled='true'] { opacity: 0.55; cursor: not-allowed; }
+.btn[aria-busy='true'] { cursor: progress; }
+
+.btn-icon { display: inline-grid; place-items: center; }
+.btn-icon:empty { display: none; }
+
+/* Spinner de 3 bloques pixel */
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  clip-path: polygon(0 0, 40% 0, 40% 40%, 0 40%, 0 0, 60% 60%, 100% 60%, 100% 100%, 60% 100%, 60% 60%);
+  animation: px-spin 0.8s steps(4) infinite;
+}
+@keyframes px-spin { to { transform: rotate(360deg); } }
+
+/* ---------- Botón de ícono ---------- */
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--r-8);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.icon-btn:hover { background: var(--surface-2); color: var(--text); }
+
+/* ---------- Skeleton ---------- */
+.skeleton {
+  display: block;
+  border-radius: var(--r-8);
+  background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 50%, var(--surface) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s var(--ease-out) infinite;
+}
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+/* ---------- Estados ---------- */
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--s-12);
+  max-width: 440px;
+  margin: 0 auto;
+  padding: var(--s-32) var(--s-24);
+}
+.state-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-12);
+  background: var(--cyan-subtle);
+  color: var(--cyan);
+}
+.state-error .state-icon { background: var(--danger-subtle); color: var(--danger); }
+.state-title { font-family: var(--font-display); font-size: 13px; line-height: 1.6; color: var(--text); }
+
+/* ---------- Toast ---------- */
+.toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: max(var(--s-16), env(safe-area-inset-bottom));
+  z-index: 50;
+  width: min(440px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  padding: var(--s-12) var(--s-8) var(--s-12) var(--s-16);
+  border-radius: var(--r-12);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-2);
+}
+.toast-icon { display: grid; place-items: center; color: var(--cyan); }
+.toast-success .toast-icon { color: var(--leaf); }
+.toast-error .toast-icon { color: var(--danger); }
+.toast-loading .toast-icon { color: var(--gold); }
+.toast-body { flex: 1; min-width: 0; }
+.toast-title { font-weight: 700; color: var(--text); }
+.toast-detail { font-size: var(--fs-14); color: var(--text-muted); overflow-wrap: anywhere; }
+
+.address { color: var(--text-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton, .btn-spinner { animation: none; }
+}

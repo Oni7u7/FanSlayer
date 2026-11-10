@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import './stage.css'
 
 const SPAWN_INTERVAL = 2000
 const PLAYER_SPEED = 3
