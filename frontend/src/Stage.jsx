@@ -11,7 +11,14 @@ const DAMAGE_COOLDOWN = 30
 const STEP_MS = 1000 / 60
 
 const BG_PATH = '/sprites/bg.jpg'
-const DROP_NAMES = ['🎸 Guitarra', '🎤 Micro', '🎵 Disco', '👟 Sneaker', '🕶️ Shades']
+const ITEMS = [
+  { id: 'cadena', name: 'Cadena', image: '/sprites/items/item_cadena.png' },
+  { id: 'guante', name: 'Guante', image: '/sprites/items/item_guante.png' },
+  { id: 'lentes', name: 'Lentes', image: '/sprites/items/item_lentes.png' },
+  { id: 'sombrero', name: 'Sombrero', image: '/sprites/items/item_sombrero.png' },
+]
+const emptyInventory = () => Object.fromEntries(ITEMS.map((it) => [it.id, 0]))
+const HP_SEGMENTS = 10
 
 // Tamaños relativos a la pantalla, para que se vea bien en cualquier ventana.
 const sizesFor = (w, h) => {
@@ -25,7 +32,10 @@ export default function Stage({ character, onBack }) {
   const gameRef = useRef(null)
   const [kills, setKills] = useState(0)
   const [score, setScore] = useState(0)
-  const [drops, setDrops] = useState([])
+  const [inventory, setInventory] = useState(emptyInventory)
+  const [lastDrop, setLastDrop] = useState(null) // { id, n } para animar el slot
+  const [hp, setHp] = useState(MAX_HP)
+  const [hitFx, setHitFx] = useState(0)
   const [gameOver, setGameOver] = useState(false)
   const [loadError, setLoadError] = useState('')
 
@@ -41,7 +51,8 @@ export default function Stage({ character, onBack }) {
       keys: {},
       kills: 0,
       score: 0,
-      drops: [],
+      inventory: emptyInventory(),
+      dropCount: 0,
       state: 'idle',
       frame: 0,
       attackTimer: 0,
@@ -173,6 +184,8 @@ export default function Stage({ character, onBack }) {
       } else if (game.zombies.some((z) => Math.hypot(p.x - z.x, p.y - z.y) < size.hitDist)) {
         p.hp = Math.max(0, p.hp - DAMAGE)
         game.dmgCooldown = DAMAGE_COOLDOWN
+        setHp(p.hp)
+        setHitFx((n) => n + 1)
         if (p.hp === 0) {
           game.gameOver = true
           setGameOver(true)
@@ -186,7 +199,10 @@ export default function Stage({ character, onBack }) {
         game.zombies = game.zombies.filter((z) => {
           const hit = Math.hypot(p.x + p.facing * reach - z.x, p.y - z.y) < size.attackRange
           if (hit && Math.random() < 0.3) {
-            game.drops.push(DROP_NAMES[Math.floor(Math.random() * DROP_NAMES.length)])
+            const item = ITEMS[Math.floor(Math.random() * ITEMS.length)]
+            game.inventory[item.id]++
+            game.dropCount++
+            setLastDrop({ id: item.id, n: game.dropCount })
           }
           return !hit
         })
@@ -196,7 +212,7 @@ export default function Stage({ character, onBack }) {
           game.score += killed * 100
           setKills(game.kills)
           setScore(game.score)
-          setDrops([...game.drops])
+          setInventory({ ...game.inventory })
         }
       }
     }
@@ -241,29 +257,6 @@ export default function Stage({ character, onBack }) {
       }
       ctx.restore()
 
-      // Barra de HP
-      const barW = Math.min(220, w * 0.4)
-      const barH = 16
-      const barX = w - barW - 12
-      const barY = 12
-      const hpRatio = p.hp / MAX_HP
-      ctx.fillStyle = '#333'
-      ctx.fillRect(barX, barY, barW, barH)
-      ctx.fillStyle = hpRatio > 0.5 ? '#4f4' : hpRatio > 0.25 ? '#ff4' : '#f44'
-      ctx.fillRect(barX, barY, barW * hpRatio, barH)
-      ctx.strokeStyle = '#fff'
-      ctx.strokeRect(barX, barY, barW, barH)
-      ctx.fillStyle = '#fff'
-      ctx.font = '12px Courier New'
-      ctx.textAlign = 'center'
-      ctx.fillText(`❤️ ${p.hp}/${MAX_HP}`, barX + barW / 2, barY + 13)
-
-      // HUD
-      ctx.font = '16px Courier New'
-      ctx.textAlign = 'left'
-      ctx.fillText(`🎤 ${character.name} #${character.tokenId}`, 12, 24)
-      ctx.fillText(`⚔️ Kills: ${game.kills}   🏆 Score: ${game.score}`, 12, 46)
-
       // Flash de daño
       if (game.dmgCooldown > DAMAGE_COOLDOWN - 5) {
         ctx.fillStyle = 'rgba(255, 0, 0, 0.2)'
@@ -298,7 +291,7 @@ export default function Stage({ character, onBack }) {
       window.removeEventListener('blur', onBlur)
       canvas.removeEventListener('pointerdown', startAttack)
     }
-  }, [sprites, character.name, character.tokenId])
+  }, [sprites])
 
   const restart = () => {
     const game = gameRef.current
@@ -306,7 +299,8 @@ export default function Stage({ character, onBack }) {
     game.zombies = []
     game.kills = 0
     game.score = 0
-    game.drops = []
+    game.inventory = emptyInventory()
+    game.dropCount = 0
     game.state = 'idle'
     game.frame = 0
     game.attackTimer = 0
@@ -314,32 +308,96 @@ export default function Stage({ character, onBack }) {
     game.gameOver = false
     setKills(0)
     setScore(0)
-    setDrops([])
+    setInventory(emptyInventory())
+    setLastDrop(null)
+    setHp(MAX_HP)
     setGameOver(false)
   }
+
+  const hpRatio = hp / MAX_HP
+  const filledSegments = Math.ceil(hpRatio * HP_SEGMENTS)
+  const hpTone = hpRatio > 0.5 ? 'ok' : hpRatio > 0.25 ? 'mid' : 'low'
 
   return (
     <div className="stage">
       <canvas ref={canvasRef} aria-label={`Escenario: juegas con ${character.name}`} />
 
-      {loadError && <p className="stage-warning">⚠️ {loadError}</p>}
+      <div className="hud">
+        {/* Retrato, nombre y vida */}
+        <div key={hitFx} className={`px-panel hud-player${hitFx ? ' is-hit' : ''}`}>
+          <div className="hud-portrait">
+            <img src={character.artist.image} alt="" />
+          </div>
+          <div className="hud-player-info">
+            <p className="hud-name">
+              {character.name} <span className="hud-token">#{character.tokenId}</span>
+            </p>
+            <div
+              className={`hud-hp hp-${hpTone}`}
+              role="meter"
+              aria-label="Vida"
+              aria-valuemin={0}
+              aria-valuemax={MAX_HP}
+              aria-valuenow={hp}
+            >
+              <span className="hud-heart" aria-hidden="true" />
+              <div className="hud-hp-bar">
+                {Array.from({ length: HP_SEGMENTS }, (_, i) => (
+                  <span key={i} className={i < filledSegments ? 'on' : ''} />
+                ))}
+              </div>
+              <span className="hud-hp-num">{hp}</span>
+            </div>
+          </div>
+        </div>
 
-      {drops.length > 0 && <div className="stage-drops">Drops: {drops.slice(-5).join(' | ')}</div>}
+        {/* Kills y score */}
+        <div className="px-panel hud-stats">
+          <div className="hud-stat">
+            <span className="hud-stat-label">KILLS</span>
+            <span key={kills} className="hud-stat-value pop">{kills}</span>
+          </div>
+          <div className="hud-stat">
+            <span className="hud-stat-label">SCORE</span>
+            <span key={score} className="hud-stat-value gold pop">{String(score).padStart(5, '0')}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Inventario de drops */}
+      <div className="px-panel hud-inventory" aria-label="Drops">
+        {ITEMS.map((it) => {
+          const count = inventory[it.id]
+          const fresh = lastDrop?.id === it.id
+          return (
+            <div
+              key={fresh ? `${it.id}-${lastDrop.n}` : it.id}
+              className={`hud-slot${count ? '' : ' empty'}${fresh ? ' fresh' : ''}`}
+              title={`${it.name}: ${count}`}
+            >
+              <img src={it.image} alt={it.name} />
+              {count > 0 && <span className="hud-slot-count">{count}</span>}
+            </div>
+          )
+        })}
+      </div>
+
+      {loadError && <p className="stage-warning">⚠️ {loadError}</p>}
 
       {gameOver && (
         <div className="stage-overlay">
-          <div>
-            <h2 style={{ color: '#f44' }}>💀 GAME OVER</h2>
-            <p>Kills: {kills} | Score: {score}</p>
-            <button onClick={restart}>🔄 Reiniciar</button>
-            <button onClick={onBack}>← Volver al Menú</button>
+          <div className="px-panel game-over">
+            <h2>GAME OVER</h2>
+            <p>KILLS {kills} · SCORE {score}</p>
+            <button className="px-button" onClick={restart}>Reiniciar</button>
+            <button className="px-button secondary" onClick={onBack}>Volver al menú</button>
           </div>
         </div>
       )}
 
       <div className="stage-hud">
-        <button onClick={onBack}>← Menú</button>
-        <span className="stage-help">WASD/Flechas = mover | Click/Space = atacar</span>
+        <button className="px-button small" onClick={onBack}>← Menú</button>
+        <span className="stage-help">WASD/Flechas mover · Click/Space atacar</span>
       </div>
     </div>
   )
