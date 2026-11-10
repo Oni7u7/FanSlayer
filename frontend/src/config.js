@@ -50,6 +50,27 @@ export const FANSLAYER_ABI = [
     outputs: [{ name: '', type: 'string' }],
   },
   {
+    name: 'totalMinted',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    name: 'hasArtist',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'wallet', type: 'address' }, { name: 'name', type: 'string' }],
+    outputs: [{ name: '', type: 'bool' }],
+  },
+  { name: 'NotEnoughMON', type: 'error', inputs: [] },
+  { name: 'UnknownArtist', type: 'error', inputs: [{ name: 'name', type: 'string' }] },
+  {
+    name: 'ArtistAlreadyOwned',
+    type: 'error',
+    inputs: [{ name: 'wallet', type: 'address' }, { name: 'name', type: 'string' }],
+  },
+  {
     name: 'mintPrice',
     type: 'function',
     stateMutability: 'view',
@@ -59,7 +80,8 @@ export const FANSLAYER_ABI = [
 ]
 
 // Catálogo de personajes. `name` es exactamente el string que se guarda
-// on-chain en artistName al mintear; así se reconoce cada NFT.
+// on-chain en artistName al mintear; así se reconoce cada NFT. Debe coincidir
+// con los artistas registrados en contracts/script/FanSlayer.s.sol.
 const spriteSet = (folder) => ({
   idle: [`/sprites/${folder}/img1.jpeg`],
   walk: [`/sprites/${folder}/img2.png`, `/sprites/${folder}/img3.png`, `/sprites/${folder}/img5.png`],

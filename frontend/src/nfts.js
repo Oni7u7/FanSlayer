@@ -20,6 +20,13 @@ async function tokenExists(tokenId) {
 }
 
 async function countTokens() {
+  // Contratos nuevos exponen totalMinted(); el desplegado originalmente no.
+  try {
+    const total = await publicClient.readContract({ ...contract, functionName: 'totalMinted' })
+    return Number(total)
+  } catch {
+    // Sin totalMinted: se busca el primer id inexistente.
+  }
   if (!(await tokenExists(0))) return 0
   // Búsqueda exponencial y luego binaria del primer id inexistente.
   let lo = 1

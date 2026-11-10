@@ -78,6 +78,17 @@ function App() {
     [playable, selectedId]
   )
 
+  // Una tarjeta por artista: los NFTs repetidos se agrupan con un contador.
+  const groups = useMemo(() => {
+    const map = new Map()
+    for (const c of owned) {
+      const key = c.artist ? c.artist.id : `name:${c.name}`
+      if (!map.has(key)) map.set(key, { key, name: c.name, artist: c.artist, tokens: [] })
+      map.get(key).tokens.push(c)
+    }
+    return [...map.values()]
+  }, [owned])
+
   const selectCharacter = (tokenId) => {
     setSelectedId(tokenId)
     if (address) saveSelected(address, tokenId)
@@ -98,6 +109,7 @@ function App() {
       wallets.find((w) => address && w.address.toLowerCase() === address.toLowerCase()) ?? wallets[0]
     if (!wallet) return setMessage('❌ No hay wallet conectada')
     if (mintPrice === null) return setMessage('❌ Aún no se carga el precio')
+    if (owned.some((c) => c.artist?.id === artist.id)) return setMessage(`Ya tienes a ${artist.name}`)
 
     try {
       setMinting(artist.name)
@@ -166,14 +178,24 @@ function App() {
                 <img src={artist.image} alt={artist.name} />
                 <h3>{artist.name}</h3>
                 <p className="muted">{priceLabel} MON</p>
-                {count > 0 && <p className="badge">Tienes {count}</p>}
-                <button onClick={() => mintArtist(artist)} disabled={!!minting || mintPrice === null}>
-                  {minting === artist.name ? 'Minteando...' : 'Comprar'}
-                </button>
+                {count > 0 ? (
+                  <p className="badge owned">✅ Ya lo tienes</p>
+                ) : (
+                  <button
+                    onClick={() => mintArtist(artist)}
+                    disabled={!!minting || mintPrice === null || ownedStatus !== 'ready'}
+                  >
+                    {minting === artist.name ? 'Minteando...' : 'Comprar'}
+                  </button>
+                )}
               </div>
             )
           })}
         </div>
+        {ownedStatus === 'loading' && <p className="muted">Revisando qué artistas ya tienes...</p>}
+        {ownedStatus === 'ready' && ARTISTS.every((a) => owned.some((c) => c.artist?.id === a.id)) && (
+          <p className="muted">Ya tienes todos los artistas disponibles.</p>
+        )}
         {message && <p>{message}</p>}
         <button onClick={() => { setMessage(''); setScreen('menu') }}>← Volver</button>
       </div>
@@ -197,22 +219,27 @@ function App() {
         {ownedStatus === 'ready' && owned.length === 0 && (
           <p className="muted">Aún no tienes personajes. Compra uno en el Workshop para jugar.</p>
         )}
-        {owned.length > 0 && (
+        {groups.length > 0 && (
           <div className="card-grid">
-            {owned.map((c) => (
-              <button
-                key={c.tokenId}
-                className={`card card-select${selected?.tokenId === c.tokenId ? ' is-selected' : ''}`}
-                onClick={() => selectCharacter(c.tokenId)}
-                disabled={!c.artist}
-                aria-pressed={selected?.tokenId === c.tokenId}
-                title={c.artist ? `Jugar con ${c.name}` : 'Este NFT no tiene sprites en el juego'}
-              >
-                {c.artist ? <img src={c.artist.image} alt="" /> : <div className="card-placeholder">?</div>}
-                <h3>{c.name || 'Sin nombre'}</h3>
-                <p className="muted">#{c.tokenId}{!c.artist && ' · no jugable'}</p>
-              </button>
-            ))}
+            {groups.map((g) => {
+              const isSelected = !!g.artist && g.tokens.some((c) => c.tokenId === selected?.tokenId)
+              const ids = g.tokens.map((c) => `#${c.tokenId}`).join(', ')
+              return (
+                <button
+                  key={g.key}
+                  className={`card card-select${isSelected ? ' is-selected' : ''}`}
+                  onClick={() => selectCharacter(g.tokens[0].tokenId)}
+                  disabled={!g.artist}
+                  aria-pressed={isSelected}
+                  title={g.artist ? `Jugar con ${g.name} (NFTs ${ids})` : 'Este NFT no tiene sprites en el juego'}
+                >
+                  {g.artist ? <img src={g.artist.image} alt="" /> : <div className="card-placeholder">?</div>}
+                  <h3>{g.name || 'Sin nombre'}</h3>
+                  {g.tokens.length > 1 && <p className="badge">×{g.tokens.length}</p>}
+                  <p className="muted">{g.artist ? (g.tokens.length > 1 ? `${g.tokens.length} NFTs` : ids) : 'no jugable'}</p>
+                </button>
+              )
+            })}
           </div>
         )}
       </section>
