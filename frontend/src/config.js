@@ -21,6 +21,9 @@ export const monadTestnet = defineChain({
   nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 },
   rpcUrls: { default: { http: ['https://testnet-rpc.monad.xyz'] } },
   blockExplorers: { default: { name: 'Explorer', url: 'https://testnet.monadexplorer.com' } },
+  contracts: {
+    multicall3: { address: '0xcA11bde05977b3631167028862bE2a173976CA11' },
+  },
   testnet: true,
 })
 
@@ -33,6 +36,20 @@ export const FANSLAYER_ABI = [
     outputs: [],
   },
   {
+    name: 'ownerOf',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'tokenId', type: 'uint256' }],
+    outputs: [{ name: '', type: 'address' }],
+  },
+  {
+    name: 'artistName',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: '', type: 'uint256' }],
+    outputs: [{ name: '', type: 'string' }],
+  },
+  {
     name: 'mintPrice',
     type: 'function',
     stateMutability: 'view',
@@ -40,3 +57,19 @@ export const FANSLAYER_ABI = [
     outputs: [{ name: '', type: 'uint256' }],
   },
 ]
+
+// Catálogo de personajes. `name` es exactamente el string que se guarda
+// on-chain en artistName al mintear; así se reconoce cada NFT.
+const spriteSet = (folder) => ({
+  idle: [`/sprites/${folder}/img1.jpeg`],
+  walk: [`/sprites/${folder}/img2.png`, `/sprites/${folder}/img3.png`, `/sprites/${folder}/img5.png`],
+  attack: [`/sprites/${folder}/img6.png`, `/sprites/${folder}/img7.png`],
+})
+
+export const ARTISTS = [
+  { id: 'badbany', name: 'Bad Bany', image: '/sprites/badbany/img1.jpeg', sprites: spriteSet('badbany') },
+  { id: 'michaeljackson', name: 'Michel Jackson', image: '/sprites/michaeljackson/img1.jpeg', sprites: spriteSet('michaeljackson') },
+]
+
+const normalize = (name) => name.trim().toLowerCase()
+export const artistByName = (name) => ARTISTS.find((a) => normalize(a.name) === normalize(name)) ?? null
