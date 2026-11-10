@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { createWalletClient, custom, formatEther } from 'viem'
 import Stage from './Stage'
+import Landing from './landing/Landing'
 import { ARTISTS, CONTRACT_ADDRESS, FANSLAYER_ABI, monadTestnet } from './config'
 import { fetchOwnedCharacters, publicClient } from './nfts'
 import './App.css'
@@ -147,18 +148,9 @@ function App() {
     }
   }
 
-  if (!ready) {
-    return <div className="screen"><p>Cargando...</p></div>
-  }
-
-  if (!authenticated) {
-    return (
-      <div className="screen">
-        <h1>⚔️ FanSlayer</h1>
-        <p>Tu merch digital con valor real</p>
-        <button onClick={login}>Connect Wallet</button>
-      </div>
-    )
+  // La landing se muestra de inmediato; el botón de jugar espera a que Privy esté listo.
+  if (!ready || !authenticated) {
+    return <Landing onPlay={login} ready={ready} />
   }
 
   if (screen === 'stage' && selected) {
