@@ -1,0 +1,16 @@
+# Secretos: nunca se suben
+.env
+.env.*
+!.env.example
+
+# Dependencias y builds
+node_modules/
+dist/
+contracts/out/
+contracts/cache/
+
+# Editor / SO
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

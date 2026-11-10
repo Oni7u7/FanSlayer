@@ -1,0 +1,36 @@
+name: Frontend
+
+permissions: {}
+
+on:
+  push:
+    paths: ["frontend/**", ".github/workflows/frontend.yml"]
+  pull_request:
+    paths: ["frontend/**", ".github/workflows/frontend.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Lint y build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      # Valores de ejemplo: el build no los usa para nada secreto.
+      VITE_PRIVY_APP_ID: ci-placeholder
+      VITE_CONTRACT_ADDRESS: "0x0000000000000000000000000000000000000000"
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
