@@ -9,13 +9,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FanSlayer: defiende el escenario</title>
     <meta name="description" content="Juego web pixel art en Monad Testnet. Compra a tu artista como NFT y aguanta oleadas de zombis en el escenario." />
-    <meta name="theme-color" content="#0a0e1a" />
+    <meta name="theme-color" content="#ffffff" />
+    <script>
+      // Aplica tema e idioma guardados (o los del sistema) antes de pintar, para no parpadear.
+      (function () {
+        var r = document.documentElement
+        try {
+          var t = localStorage.getItem('fanslayer:theme')
+          var l = localStorage.getItem('fanslayer:lang')
+        } catch (e) {}
+        if (t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        if (l !== 'es' && l !== 'en') l = (navigator.language || 'es').toLowerCase().indexOf('en') === 0 ? 'en' : 'es'
+        r.dataset.theme = t
+        r.style.colorScheme = t
+        r.lang = l
+      })()
+    </script>
     <meta property="og:type" content="website" />
     <meta property="og:title" content="FanSlayer: defiende el escenario" />
     <meta property="og:description" content="Compra a tu artista como NFT y aguanta oleadas de zombis en el escenario." />
     <meta property="og:url" content="https://fan-slayer.vercel.app/" />
     <meta property="og:site_name" content="FanSlayer" />
     <meta property="og:locale" content="es_MX" />
+    <meta property="og:locale:alternate" content="en_US" />
     <meta property="og:image" content="https://fan-slayer.vercel.app/landing/gameplay.jpg" />
     <meta property="og:image:width" content="800" />
     <meta property="og:image:height" content="600" />
