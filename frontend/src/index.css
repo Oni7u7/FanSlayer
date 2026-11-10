@@ -28,7 +28,3 @@ a { color: inherit; }
 
 :focus-visible { outline: 3px dashed var(--ring); outline-offset: 4px; }
 
-/* Lenis: scroll suave con inercia */
-html.lenis, html.lenis body { height: auto; }
-.lenis.lenis-smooth { scroll-behavior: auto !important; }
-.lenis.lenis-stopped { overflow: hidden; }

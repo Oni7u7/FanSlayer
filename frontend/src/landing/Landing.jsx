@@ -1,145 +1,160 @@
-import { motion, useReducedMotion, useScroll, useSpring } from 'motion/react'
-import { ArrowDown, GithubLogo, Skull, Storefront, UsersThree, Wallet } from '@phosphor-icons/react'
+import { ArrowRight, ArrowUpRight, GithubLogo, Moon, Sun, Wallet } from '@phosphor-icons/react'
 import { ARTISTS, CONTRACT_ADDRESS, monadTestnet } from '../config'
-import { Address, Button } from '../ui'
-import SpriteLoop from './SpriteLoop'
-import useSmoothScroll from './useSmoothScroll'
+import { usePrefs } from '../prefs'
+import { COPY } from './copy'
 import './landing.css'
 
 const EXPLORER = `${monadTestnet.blockExplorers.default.url}/address/${CONTRACT_ADDRESS}`
 const REPO = 'https://github.com/Oni7u7/fanslayer'
-const ease = [0.16, 1, 0.3, 1]
+// Dirección truncada en medio: se ve el inicio y el final, que es lo que se compara.
+const shortAddress = (a) => `${a.slice(0, 6)}...${a.slice(-4)}`
 
-const heroParent = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } }
-const heroChild = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.3, ease } } }
-const listParent = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } }
-const listChild = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.3, ease } } }
-const reveal = { initial: 'hidden', whileInView: 'show', viewport: { once: true, margin: '-60px' } }
-
-const STEPS = [
-  { icon: Storefront, verb: 'Compra', text: 'Un artista por 0.01 MON.' },
-  { icon: UsersThree, verb: 'Elige', text: 'Tu colección vive en la cadena.' },
-  { icon: Skull, verb: 'Defiende', text: 'Aguanta las oleadas de zombis.' },
-]
-
-function PlayButton({ onPlay, ready, size = 'md' }) {
+function PlayButton({ onPlay, ready, t, compact = false }) {
   return (
-    <Button size={size} onClick={onPlay} loading={!ready} icon={<Wallet size={18} weight="bold" />}>
-      {ready ? 'Jugar ahora' : 'Cargando'}
-    </Button>
+    <button type="button" className="lp-btn lp-btn-primary" onClick={onPlay} disabled={!ready} aria-busy={!ready}>
+      <Wallet size={18} weight="bold" aria-hidden="true" />
+      <span>{!ready ? t.loading : compact ? t.playShort : t.play}</span>
+    </button>
+  )
+}
+
+function Controls({ t }) {
+  const { theme, toggleTheme, lang, setLang } = usePrefs()
+  const isDark = theme === 'dark'
+  return (
+    <div className="lp-controls">
+      <div className="lp-lang" role="group" aria-label={t.langGroup}>
+        {['es', 'en'].map((code) => (
+          <button
+            key={code}
+            type="button"
+            className="lp-lang-btn"
+            aria-pressed={lang === code}
+            onClick={() => setLang(code)}
+            lang={code}
+          >
+            {code.toUpperCase()}
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        className="lp-icon-btn"
+        onClick={toggleTheme}
+        aria-label={isDark ? t.toLight : t.toDark}
+        title={isDark ? t.toLight : t.toDark}
+      >
+        {isDark ? <Sun size={20} weight="bold" aria-hidden="true" /> : <Moon size={20} weight="bold" aria-hidden="true" />}
+      </button>
+    </div>
   )
 }
 
 export default function Landing({ onPlay, ready }) {
-  useSmoothScroll()
-  const reduce = useReducedMotion()
-  const { scrollYProgress } = useScroll()
-  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 26 })
-  const hero = ARTISTS[0]
+  const { lang } = usePrefs()
+  const t = COPY[lang]
 
   return (
     <div className="lp">
-      <a className="skip-link" href="#contenido">Saltar al contenido</a>
-      <motion.div className="scroll-progress" style={{ scaleX: progress }} aria-hidden="true" />
+      <a className="lp-skip" href="#contenido">{t.skip}</a>
 
-      <header className="nav">
-        <a href="#top" className="logo" aria-label="FanSlayer, inicio">FAN<span>SLAYER</span></a>
-        <PlayButton onPlay={onPlay} ready={ready} size="sm" />
+      <header className="lp-header">
+        <div className="lp-wrap lp-header-row">
+          <a href="#contenido" className="lp-logo" aria-label={t.home}>
+            <span className="lp-logo-mark" aria-hidden="true" />
+            FANSLAYER
+          </a>
+          <nav className="lp-nav" aria-label={t.navHow}>
+            <a href="#como-funciona">{t.navHow}</a>
+            <a href="#artistas">{t.navArtists}</a>
+          </nav>
+          <Controls t={t} />
+          <div className="lp-header-cta">
+            <PlayButton onPlay={onPlay} ready={ready} t={t} compact />
+          </div>
+        </div>
       </header>
 
       <main id="contenido">
-        <section id="top" className="hero">
-          <motion.div className="hero-copy" variants={heroParent} initial="hidden" animate="show">
-            <motion.p className="t-eyebrow" variants={heroChild}>Juego web · Monad Testnet</motion.p>
-            <motion.h1 className="t-display hero-title" variants={heroChild}>
-              Defiende el <span className="hl">escenario</span>
-            </motion.h1>
+        <section className="lp-wrap lp-hero" aria-labelledby="hero-title">
+          <div className="lp-hero-copy">
+            <p className="lp-eyebrow">{t.eyebrow}</p>
+            <h1 id="hero-title" className="lp-title">{t.title}</h1>
+            <p className="lp-lead">{t.sub}</p>
+            <div className="lp-ctas">
+              <PlayButton onPlay={onPlay} ready={ready} t={t} />
+              <a className="lp-btn lp-btn-ghost" href="#como-funciona">
+                <span>{t.navHow}</span>
+                <ArrowRight size={18} weight="bold" aria-hidden="true" />
+              </a>
+            </div>
+          </div>
 
-            <motion.div className="hero-char" variants={heroChild} aria-hidden="true">
-              <motion.div
-                className="hero-char-sprite"
-                animate={reduce ? undefined : { y: [0, -8, 0] }}
-                transition={{ duration: 1.6, ease: 'easeInOut', repeat: Infinity, repeatType: 'loop' }}
-              >
-                <SpriteLoop frames={hero.sprites.idle.concat(hero.sprites.walk)} alt="" interval={260} />
-              </motion.div>
-              <span className="hero-platform" />
-            </motion.div>
-
-            <motion.p className="t-lead hero-sub" variants={heroChild}>
-              Compra a tu artista como NFT y aguanta oleadas de zombis.
-            </motion.p>
-            <motion.div className="hero-ctas" variants={heroChild}>
-              <PlayButton onPlay={onPlay} ready={ready} />
-              <Button variant="secondary" href="#juego" icon={<ArrowDown size={18} weight="bold" />}>
-                Cómo se juega
-              </Button>
-            </motion.div>
-            <motion.p className={`press-start${reduce ? '' : ' is-blinking'}`} variants={heroChild} aria-hidden="true">
-              PRESS START
-            </motion.p>
-          </motion.div>
+          <figure className="lp-shot">
+            <div className="lp-shot-frame">
+              <img src="/landing/gameplay.jpg" width="800" height="600" alt={t.shotAlt} fetchPriority="high" />
+            </div>
+            <figcaption className="lp-mono lp-caption">{t.shotCaption}</figcaption>
+          </figure>
         </section>
 
-        <section id="juego" className="section" aria-labelledby="juego-title">
-          <h2 id="juego-title" className="t-title section-title">Cómo se juega</h2>
-          <motion.ol className="steps" variants={listParent} {...reveal}>
-            {STEPS.map((s, i) => {
-              const Icon = s.icon
-              return (
-                <motion.li key={s.verb} className="step" variants={listChild}>
-                  <span className="step-num" aria-hidden="true">{i + 1}</span>
-                  <Icon size={28} weight="bold" aria-hidden="true" className="step-icon" />
-                  <h3 className="step-verb">{s.verb}</h3>
-                  <p className="t-body">{s.text}</p>
-                </motion.li>
-              )
-            })}
-          </motion.ol>
-        </section>
-
-        <section id="artistas" className="section" aria-labelledby="artistas-title">
-          <h2 id="artistas-title" className="t-title section-title">Artistas</h2>
-          <motion.ul className="artists" variants={listParent} {...reveal}>
-            {ARTISTS.map((artist) => (
-              <motion.li
-                key={artist.id}
-                className="artist"
-                variants={listChild}
-                whileHover={reduce ? undefined : { y: -4 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 24 }}
-              >
-                <SpriteLoop
-                  frames={[...artist.sprites.walk, ...artist.sprites.attack]}
-                  alt={`${artist.name} en pixel art`}
-                  className="artist-sprite"
-                />
-                <div className="artist-info">
-                  <h3 className="artist-name">{artist.name}</h3>
-                  <p className="price t-mono">0.01 MON <span className="price-net">testnet</span></p>
-                  <p className="t-body">Uno por wallet</p>
-                </div>
-              </motion.li>
+        <section id="como-funciona" className="lp-wrap lp-section" aria-labelledby="how-title">
+          <h2 id="how-title" className="lp-h2">{t.howTitle}</h2>
+          <ol className="lp-steps">
+            {t.steps.map((s, i) => (
+              <li key={s.verb} className="lp-step">
+                <span className="lp-mono lp-step-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <h3 className="lp-h3">{s.verb}</h3>
+                <p>{s.text}</p>
+              </li>
             ))}
-          </motion.ul>
+          </ol>
         </section>
 
-        <section className="section final" aria-labelledby="final-title">
-          <h2 id="final-title" className="t-title">¿Listo para salir al escenario?</h2>
-          <PlayButton onPlay={onPlay} ready={ready} />
+        <section id="artistas" className="lp-wrap lp-section" aria-labelledby="artists-title">
+          <h2 id="artists-title" className="lp-h2">{t.artistsTitle}</h2>
+          <ul className="lp-artists">
+            {ARTISTS.map((artist) => (
+              <li key={artist.id} className="lp-artist">
+                <div className="lp-artist-img">
+                  <img src={artist.image} alt={t.artistAlt(artist.name)} loading="lazy" width="500" height="500" />
+                </div>
+                <div className="lp-artist-body">
+                  <h3 className="lp-h3">{artist.name}</h3>
+                  <dl className="lp-specs">
+                    <div>
+                      <dt className="lp-mono">{t.price}</dt>
+                      <dd className="lp-mono">0.01 MON</dd>
+                    </div>
+                    <div>
+                      <dt className="lp-mono">{t.limit}</dt>
+                      <dd className="lp-mono">{t.perWallet}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </li>
+            ))}
+          </ul>
         </section>
       </main>
 
-      <footer className="footer">
-        <p className="t-body">
-          MON de prueba, sin valor real. Contrato{' '}
-          <a className="text-link" href={EXPLORER} target="_blank" rel="noreferrer">
-            <Address value={CONTRACT_ADDRESS} />
+      <footer className="lp-footer">
+        <div className="lp-wrap lp-footer-row">
+          <p>{t.disclaimer}</p>
+          <p>
+            {t.contract}{' '}
+            <a className="lp-link lp-mono" href={EXPLORER} target="_blank" rel="noreferrer">
+              {shortAddress(CONTRACT_ADDRESS)}
+              <ArrowUpRight size={14} weight="bold" aria-hidden="true" />
+              <span className="lp-sr">{t.newTab}</span>
+            </a>
+          </p>
+          <a className="lp-link" href={REPO} target="_blank" rel="noreferrer">
+            <GithubLogo size={18} weight="bold" aria-hidden="true" />
+            {t.source}
+            <span className="lp-sr">{t.newTab}</span>
           </a>
-        </p>
-        <a className="text-link" href={REPO} target="_blank" rel="noreferrer">
-          <GithubLogo size={18} weight="bold" aria-hidden="true" /> Código
-        </a>
+        </div>
       </footer>
     </div>
   )

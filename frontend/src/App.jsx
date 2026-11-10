@@ -230,8 +230,8 @@ function App() {
 
   return (
     <>
-      {/* El juego tiene su propio escenario; el fondo 3D se apaga para no gastar GPU */}
-      {!inGame && <AmbientBackground variant={variant} />}
+      {/* La landing va sin fondo animado (pedido explícito); el juego tiene su propio escenario */}
+      {!inGame && authenticated && ready && <AmbientBackground variant={variant} />}
       {content}
     </>
   )
