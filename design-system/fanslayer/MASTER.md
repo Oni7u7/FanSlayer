@@ -249,3 +249,9 @@ La paleta generada (neón rojo + azul + verde de puntaje sobre navy) se tradujo 
 Tipografía: Press Start 2P (display), Space Grotesk (cuerpo, legible) y VT323 (mono para montos y direcciones).
 VT323 sale de la recomendación "Press Start 2P / VT323"; Space Grotesk se agregó porque VT323 no es legible en párrafos.
 Las fuentes son self-hosted con @fontsource en vez del enlace de Google Fonts.
+
+
+## v3: Arcade mínimo (actual, reemplaza la adaptación anterior)
+
+Segunda consulta a UI/UX Pro Max ("retro pixel art minimal game", variance 3, motion 3, density 2): estilo Minimalism & Swiss, tipografía Press Start 2P / VT323, sombras duras, movimiento sutil.
+Tokens actuales en `frontend/src/styles/tokens.css`: `--bg #0d0f1a`, `--text #f4efe1`, `--gold #ffcc4d` (acción y puntaje), `--pink #ff5c8a` (acento puntual), radios 0, sombras `4px 4px 0`. Cuerpo en VT323.
