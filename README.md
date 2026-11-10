@@ -25,6 +25,14 @@ El `.env` nunca se sube: está en `.gitignore`. En Vercel las variables se confi
 
 ## FIX_NOTES
 
+### v4: landing minimal cybercore (noviembre 2026)
+
+- **Contenido invisible sin scroll:** las secciones de la landing nacían con `opacity: 0` y solo aparecían al hacer scroll; sin JavaScript, en capturas o en algunos bots se veía una página vacía bajo el hero. La landing nueva no oculta nada.
+- **Modo claro sin control:** el tema dependía solo del sistema operativo. Ahora hay botón claro/oscuro que se guarda (`fanslayer:theme`) y se aplica antes de pintar (script inline en `index.html`), así no parpadea. Los tokens de la app también siguen la elección (`:root[data-theme='light']`).
+- **Solo español:** se agregó ES/EN en la landing; el idioma se guarda (`fanslayer:lang`), cambia `<html lang>` y la primera visita toma el idioma del navegador.
+- **Diálogo de Privy siempre oscuro:** ahora sigue el tema elegido.
+- **Dependencia sin uso:** `lenis` (scroll suave) se quitó junto con sus estilos.
+
 ### v3: arcade mínimo (noviembre 2026)
 
 - **Fondo pesado y cansado:** la escena de three.js (constelación, bola de disco, aurora y haces) distraía y pesaba 129 KB gzip extra. Se reemplazó por dos canvas de baja resolución sin dependencias, y se quitó `three`.
@@ -46,6 +54,16 @@ Cambios del rediseño (noviembre 2026) que corrigen problemas, no solo estética
 
 ## DESIGN_NOTES
 
+### v4: minimal cybercore (actual, landing)
+
+- **Pedido:** landing minimalista, estilo cybercore, colores claros y blancos limpios, sin animaciones por ahora, con menos elementos amontonados, modo claro y oscuro, y ES/EN.
+- **Dirección:** UI/UX Pro Max devolvió primero "Cyberpunk UI" (negro neón, no recomienda modo claro), que choca con el pedido; se reintentó una vez y se tomó **Minimalism & Swiss** (blanco, alto contraste, sin sombras, radio 0, un solo acento) con una capa cybercore: etiquetas en monoespaciada, líneas de 1 px y esquinas de mira alrededor de la captura.
+- **Color:** blanco `#ffffff`, tinta `#0b0c10`, gris `#555b68` (6.8:1) y un único acento azul eléctrico `#1f3bff` (6.8:1 sobre blanco). En oscuro: `#0b0c10`, `#eef0f4` y acento `#8c9bff`. Los tokens viven en `.lp` (`frontend/src/landing/landing.css`).
+- **Tipografía:** Chakra Petch (display de corte técnico), Space Grotesk (cuerpo) y JetBrains Mono (etiquetas, precios y la dirección del contrato, truncada en medio). Todas self-hosted con Fontsource.
+- **Fondo 3D:** no se tiró el dado ni se montó fondo en la landing porque se pidió explícitamente "sin animaciones". El fondo animado anterior sigue solo en las pantallas con sesión iniciada. No hay transiciones ni animaciones en la landing; los hovers cambian de color al instante.
+- **Contenido:** hero (titular, una línea, dos botones y la captura real), "Cómo funciona" en tres columnas separadas por líneas, y los dos artistas con precio y límite reales del contrato. Se quitaron el personaje rebotando, el "PRESS START", la barra de progreso y el bloque final.
+- **Detalle propio:** la captura de una partida real con su HUD y los precios/límites del contrato en monoespaciada.
+
 ### v3: arcade mínimo (actual)
 
 - **Dirección:** UI/UX Pro Max recomendó Minimalism & Swiss con tipografía pixel (Press Start 2P / VT323), sombras duras y movimiento sutil. Paleta de consola limitada: noche, hueso, dorado para la acción principal y el puntaje, y rosa solo como acento. Esquinas rectas, bordes de 2 px y sombras de pixel sin desenfoque. VT323 pasa a ser la fuente de cuerpo, con la escala tipográfica agrandada porque se ve más chica que su tamaño nominal.
@@ -64,10 +82,9 @@ Cambios del rediseño (noviembre 2026) que corrigen problemas, no solo estética
 
 ## Checklist de 2 minutos en el celular
 
-1. Abre https://fan-slayer.vercel.app: se ven estrellas pixel y marcos cuadrados que avanzan despacio; no hay scroll horizontal.
-2. El personaje del hero rebota suave y "PRESS START" parpadea.
-3. Baja con el dedo: la barra dorada de arriba avanza y los pasos y artistas aparecen suaves.
-4. Toca "Jugar ahora", inicia sesión y revisa que aparezcan tus personajes (o el estado vacío).
-5. Cambia a Workshop: el precio carga y los artistas que ya tienes dicen "En tu colección".
-6. Equipa un personaje y toca "Jugar": el juego llena la pantalla y el fondo se apaga.
-7. Activa el modo claro del teléfono y recarga: todo se lee bien.
+1. Abre https://fan-slayer.vercel.app: fondo blanco (o negro si tu teléfono está en modo oscuro), sin animaciones y sin scroll horizontal.
+2. Toca el ícono de luna/sol: cambia a oscuro/claro al instante. Recarga: se queda como lo dejaste.
+3. Toca EN: todos los textos pasan a inglés. Recarga: sigue en inglés. Toca ES para regresar.
+4. Baja la página: se ven "Cómo funciona" y los dos artistas sin tener que esperar nada.
+5. Toca el link del contrato: abre el explorador de Monad Testnet en otra pestaña.
+6. Toca "Jugar ahora" e inicia sesión: el diálogo de Privy usa el mismo tema y llegas a tus personajes.
