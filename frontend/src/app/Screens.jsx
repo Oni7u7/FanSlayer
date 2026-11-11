@@ -1,8 +1,13 @@
+import { motion } from 'motion/react'
 import { CheckCircle, GameController, Play, ShoppingBag, SignOut, Storefront } from '@phosphor-icons/react'
 import { formatEther } from 'viem'
 import { ARTISTS } from '../config'
 import { useT } from '../i18n'
 import { Address, Button, EmptyState, ErrorState, IconButton, PrefsControls, Skeleton } from '../ui'
+
+const press = { type: 'spring', stiffness: 400, damping: 22 }
+const list = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } }
+const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 280, damping: 26 } } }
 
 export function AppHeader({ screen, onNavigate, address, onLogout }) {
   const t = useT().app
@@ -27,6 +32,9 @@ export function AppHeader({ screen, onNavigate, address, onLogout }) {
               onClick={() => onNavigate(id)}
             >
               {label}
+              {screen === id && (
+                <motion.span layoutId="tab-indicator" className="tab-indicator" transition={{ type: 'spring', stiffness: 380, damping: 30 }} />
+              )}
             </button>
           ))}
         </nav>
@@ -97,14 +105,16 @@ export function RosterView({ groups, status, selected, onSelect, onRetry, onPlay
       )}
 
       {groups.length > 0 && (
-        <ul className="roster-grid">
+        <motion.ul className="roster-grid" variants={list} initial="hidden" animate="show">
           {groups.map((g) => {
             const isSelected = !!g.artist && g.tokens.some((c) => c.tokenId === selected?.tokenId)
             const ids = g.tokens.map((c) => `#${c.tokenId}`).join(', ')
             return (
-              <li key={g.key}>
-                <button
+              <motion.li key={g.key} variants={item}>
+                <motion.button
                   type="button"
+                  whileTap={g.artist ? { scale: 0.98 } : undefined}
+                  transition={press}
                   className="char-card"
                   onClick={() => onSelect(g.tokens[0].tokenId)}
                   disabled={!g.artist}
@@ -121,11 +131,11 @@ export function RosterView({ groups, status, selected, onSelect, onRetry, onPlay
                       <CheckCircle size={16} weight="fill" aria-hidden="true" /> {t.equipped}
                     </span>
                   )}
-                </button>
-              </li>
+                </motion.button>
+              </motion.li>
             )
           })}
-        </ul>
+        </motion.ul>
       )}
 
       <div className="play-bar">
@@ -172,12 +182,12 @@ export function WorkshopView({ owned, ownedStatus, mintPrice, priceStatus, onRet
         </ErrorState>
       )}
 
-      <ul className="shop-list">
+      <motion.ul className="shop-list" variants={list} initial="hidden" animate="show">
         {ARTISTS.map((artist) => {
           const count = owned.filter((c) => c.artist?.id === artist.id).length
           const checking = ownedStatus !== 'ready'
           return (
-            <li key={artist.id} className="shop-item">
+            <motion.li key={artist.id} className="shop-item" variants={item}>
               <Portrait artist={artist} />
               <div className="shop-info">
                 <h2 className="shop-name">{artist.name}</h2>
@@ -209,10 +219,10 @@ export function WorkshopView({ owned, ownedStatus, mintPrice, priceStatus, onRet
                   </Button>
                 )}
               </div>
-            </li>
+            </motion.li>
           )
         })}
-      </ul>
+      </motion.ul>
 
       {allOwned && <p className="t-body center-note">{t.allOwned}</p>}
     </section>

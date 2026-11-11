@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
+import { AnimatePresence, motion } from 'motion/react'
 import { createWalletClient, custom } from 'viem'
 import Stage from './Stage'
 import Landing from './landing/Landing'
@@ -188,6 +189,14 @@ function App() {
         <AppHeader screen={screen} onNavigate={setScreen} address={address} onLogout={logout} />
         <main id="app-main" className="app-main">
           <div className="app-wrap">
+            <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={screen}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6, transition: { duration: 0.15 } }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
             {screen === 'workshop' ? (
               <WorkshopView
                 owned={owned}
@@ -209,6 +218,8 @@ function App() {
                 onShop={() => setScreen('workshop')}
               />
             )}
+            </motion.div>
+            </AnimatePresence>
           </div>
         </main>
         <Toast toast={toast} onClose={() => setToast(null)} />
