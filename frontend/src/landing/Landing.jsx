@@ -1,7 +1,7 @@
-import { ArrowRight, ArrowUpRight, GithubLogo, Moon, Sun, Wallet } from '@phosphor-icons/react'
+import { ArrowRight, ArrowUpRight, GithubLogo, Wallet } from '@phosphor-icons/react'
 import { ARTISTS, CONTRACT_ADDRESS, monadTestnet } from '../config'
-import { usePrefs } from '../prefs'
-import { COPY } from './copy'
+import { useT } from '../i18n'
+import { PrefsControls } from '../ui'
 import './landing.css'
 
 const EXPLORER = `${monadTestnet.blockExplorers.default.url}/address/${CONTRACT_ADDRESS}`
@@ -18,41 +18,8 @@ function PlayButton({ onPlay, ready, t, compact = false }) {
   )
 }
 
-function Controls({ t }) {
-  const { theme, toggleTheme, lang, setLang } = usePrefs()
-  const isDark = theme === 'dark'
-  return (
-    <div className="lp-controls">
-      <div className="lp-lang" role="group" aria-label={t.langGroup}>
-        {['es', 'en'].map((code) => (
-          <button
-            key={code}
-            type="button"
-            className="lp-lang-btn"
-            aria-pressed={lang === code}
-            onClick={() => setLang(code)}
-            lang={code}
-          >
-            {code.toUpperCase()}
-          </button>
-        ))}
-      </div>
-      <button
-        type="button"
-        className="lp-icon-btn"
-        onClick={toggleTheme}
-        aria-label={isDark ? t.toLight : t.toDark}
-        title={isDark ? t.toLight : t.toDark}
-      >
-        {isDark ? <Sun size={20} weight="bold" aria-hidden="true" /> : <Moon size={20} weight="bold" aria-hidden="true" />}
-      </button>
-    </div>
-  )
-}
-
 export default function Landing({ onPlay, ready }) {
-  const { lang } = usePrefs()
-  const t = COPY[lang]
+  const t = useT()
 
   return (
     <div className="lp">
@@ -68,7 +35,7 @@ export default function Landing({ onPlay, ready }) {
             <a href="#como-funciona">{t.navHow}</a>
             <a href="#artistas">{t.navArtists}</a>
           </nav>
-          <Controls t={t} />
+          <PrefsControls />
           <div className="lp-header-cta">
             <PlayButton onPlay={onPlay} ready={ready} t={t} compact />
           </div>

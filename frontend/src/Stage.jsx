@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useT } from './i18n'
 import './stage.css'
 
 const SPAWN_INTERVAL = 2000
@@ -37,6 +38,7 @@ const sizesFor = (w, h) => {
 }
 
 export default function Stage({ character, onBack }) {
+  const t = useT().stage
   const sprites = character.artist.sprites
   const canvasRef = useRef(null)
   const gameRef = useRef(null)
@@ -115,7 +117,7 @@ export default function Stage({ character, onBack }) {
       img.onload = settle
       img.onerror = () => {
         delete game.images[path]
-        setLoadError(`No se pudo cargar ${path}`)
+        setLoadError(path)
         settle()
       }
       img.src = path
@@ -426,7 +428,7 @@ export default function Stage({ character, onBack }) {
 
   return (
     <div className="stage">
-      <canvas ref={canvasRef} aria-label={`Escenario: juegas con ${character.name}`} />
+      <canvas ref={canvasRef} aria-label={t.canvas(character.name)} />
 
       <div className="hud">
         {/* Retrato, nombre y vida */}
@@ -441,7 +443,7 @@ export default function Stage({ character, onBack }) {
             <div
               className={`hud-hp hp-${hpTone}`}
               role="meter"
-              aria-label="Vida"
+              aria-label={t.health}
               aria-valuemin={0}
               aria-valuemax={MAX_HP}
               aria-valuenow={hp}
@@ -487,7 +489,7 @@ export default function Stage({ character, onBack }) {
       )}
 
       {/* Inventario de drops */}
-      <div className="px-panel hud-inventory" aria-label="Drops">
+      <div className="px-panel hud-inventory" aria-label={t.drops}>
         {ITEMS.map((it) => {
           const count = inventory[it.id]
           const fresh = lastDrop?.id === it.id
@@ -504,23 +506,23 @@ export default function Stage({ character, onBack }) {
         })}
       </div>
 
-      {loadError && <p className="stage-warning">⚠️ {loadError}</p>}
+      {loadError && <p className="stage-warning" role="alert">{t.loadError(loadError)}</p>}
 
       {gameOver && (
         <div className="stage-overlay">
           <div className="px-panel game-over">
             <h2>GAME OVER</h2>
             <p>KILLS {kills} · SCORE {score}</p>
-            <p>MEJOR COMBO {bestCombo}</p>
-            <button className="px-button" onClick={restart}>Reiniciar</button>
-            <button className="px-button secondary" onClick={onBack}>Volver al menú</button>
+            <p>{t.bestCombo} {bestCombo}</p>
+            <button className="px-button" onClick={restart}>{t.restart}</button>
+            <button className="px-button secondary" onClick={onBack}>{t.backToMenu}</button>
           </div>
         </div>
       )}
 
       <div className="stage-hud">
-        <button className="px-button small" onClick={onBack}>← Menú</button>
-        <span className="stage-help">WASD/Flechas mover · Click/Space atacar</span>
+        <button className="px-button small" onClick={onBack}>← {t.menu}</button>
+        <span className="stage-help">{t.help}</span>
       </div>
     </div>
   )

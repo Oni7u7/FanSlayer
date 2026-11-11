@@ -6,15 +6,16 @@
  * Tokens propios con modo claro y oscuro (data-theme en <html>).
  */
 .lp {
-  --lp-bg: #ffffff;
-  --lp-surface: #f5f6f8;
-  --lp-line: #e3e5ea;
-  --lp-ink: #0b0c10;
-  --lp-muted: #555b68;
-  --lp-accent: #1f3bff;
-  --lp-on-accent: #ffffff;
-  --lp-accent-hover: #1630d6;
-  --lp-screen: #0b0c10; /* fondo de las capturas y sprites (son pixel art sobre negro) */
+  /* Los colores salen del sistema global (styles/tokens.css), que ya cambia con el tema */
+  --lp-bg: var(--bg);
+  --lp-surface: var(--surface);
+  --lp-line: var(--border);
+  --lp-ink: var(--text);
+  --lp-muted: var(--text-muted);
+  --lp-accent: var(--accent);
+  --lp-on-accent: var(--on-accent);
+  --lp-accent-hover: var(--accent-hover);
+  --lp-screen: var(--screen);
 
   --lp-font-display: 'Chakra Petch', 'Space Grotesk Variable', system-ui, sans-serif;
   --lp-font-body: 'Space Grotesk Variable', system-ui, sans-serif;
@@ -30,18 +31,6 @@
   font-family: var(--lp-font-body);
   font-size: 16px;
   line-height: 1.6;
-}
-
-:root[data-theme='dark'] .lp {
-  --lp-bg: #0b0c10;
-  --lp-surface: #12141a;
-  --lp-line: #262a33;
-  --lp-ink: #eef0f4;
-  --lp-muted: #9ba1ae;
-  --lp-accent: #8c9bff;
-  --lp-on-accent: #0b0c10;
-  --lp-accent-hover: #a9b4ff;
-  --lp-screen: #000000;
 }
 
 .lp *, .lp *::before, .lp *::after { transition: none; animation: none; }
@@ -106,7 +95,6 @@
   width: 14px;
   height: 14px;
   background: var(--lp-accent);
-  box-shadow: 4px 4px 0 var(--lp-ink);
 }
 
 .lp-nav { display: flex; gap: 8px; margin-left: auto; }
@@ -120,38 +108,6 @@
   font-weight: 500;
 }
 .lp-nav a:hover { color: var(--lp-ink); }
-
-.lp-controls { display: flex; align-items: center; gap: 8px; }
-
-.lp-lang { display: flex; box-shadow: inset 0 0 0 1px var(--lp-line); }
-.lp-lang-btn {
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0 8px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--lp-muted);
-  font-family: var(--lp-font-mono);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.lp-lang-btn:hover { color: var(--lp-ink); }
-.lp-lang-btn[aria-pressed='true'] { background: var(--lp-ink); color: var(--lp-bg); }
-
-.lp-icon-btn {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--lp-line);
-  border-radius: 0;
-  background: transparent;
-  color: var(--lp-ink);
-  cursor: pointer;
-}
-.lp-icon-btn:hover { border-color: var(--lp-ink); }
 
 /* ---------- Botones ---------- */
 .lp-btn {
@@ -343,7 +299,7 @@
 
 @media (max-width: 720px) {
   .lp-nav { display: none; }
-  .lp-controls { margin-left: auto; }
+  .lp .prefs { margin-left: auto; }
 }
 
 @media (max-width: 600px) {
