@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { createWalletClient, custom } from 'viem'
 import Stage from './Stage'
 import Landing from './landing/Landing'
-import AmbientBackground from './ambient/AmbientBackground'
 import { AppHeader, RosterView, WorkshopView } from './app/Screens'
 import { Toast } from './ui'
+import { useT } from './i18n'
 import { CONTRACT_ADDRESS, FANSLAYER_ABI, monadTestnet } from './config'
 import { fetchOwnedCharacters, publicClient } from './nfts'
 import './App.css'
@@ -30,23 +29,17 @@ function saveSelected(address, tokenId) {
   }
 }
 
-function shortError(e) {
-  const msg = e?.shortMessage || e?.message || 'Error desconocido'
-  if (/user rejected|denied/i.test(msg)) return 'Cancelaste la transacción en tu wallet.'
-  if (/insufficient funds/i.test(msg)) return 'No tienes MON de testnet suficiente para pagar el mint y el gas.'
+function shortError(e, t) {
+  const msg = e?.shortMessage || e?.message || t.unknownError
+  if (/user rejected|denied/i.test(msg)) return t.rejected
+  if (/insufficient funds/i.test(msg)) return t.noFunds
   return msg.slice(0, 140)
-}
-
-const screenMotion = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-  transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
 }
 
 function App() {
   const { ready, login, logout, authenticated, user } = usePrivy()
   const { wallets } = useWallets()
+  const t = useT().app
   const [screen, setScreen] = useState('menu') // menu | workshop | stage
   const [minting, setMinting] = useState('')
   const [mintPrice, setMintPrice] = useState(null)
@@ -140,20 +133,20 @@ function App() {
   const mintArtist = async (artist) => {
     const wallet =
       wallets.find((w) => address && w.address.toLowerCase() === address.toLowerCase()) ?? wallets[0]
-    if (!wallet) return showToast({ tone: 'error', title: 'No hay wallet conectada', detail: 'Cierra sesión y vuelve a entrar.' })
-    if (mintPrice === null) return showToast({ tone: 'error', title: 'Aún no se carga el precio' })
-    if (owned.some((c) => c.artist?.id === artist.id)) return showToast({ tone: 'info', title: `Ya tienes a ${artist.name}` })
+    if (!wallet) return showToast({ tone: 'error', title: t.noWallet, detail: t.noWalletDetail })
+    if (mintPrice === null) return showToast({ tone: 'error', title: t.noPrice })
+    if (owned.some((c) => c.artist?.id === artist.id)) return showToast({ tone: 'info', title: t.alreadyOwned(artist.name) })
 
     try {
       setMinting(artist.name)
-      showToast({ tone: 'loading', title: 'Cambiando a Monad Testnet' })
+      showToast({ tone: 'loading', title: t.switching })
       await wallet.switchChain(monadTestnet.id)
 
       const provider = await wallet.getEthereumProvider()
       const walletClient = createWalletClient({ chain: monadTestnet, transport: custom(provider) })
       const [account] = await walletClient.getAddresses()
 
-      showToast({ tone: 'loading', title: 'Confirma en tu wallet', detail: `Mint de ${artist.name}` })
+      showToast({ tone: 'loading', title: t.confirmInWallet, detail: t.mintOf(artist.name) })
       const hash = await walletClient.writeContract({
         address: CONTRACT_ADDRESS,
         abi: FANSLAYER_ABI,
@@ -163,25 +156,24 @@ function App() {
         account,
       })
 
-      showToast({ tone: 'loading', title: 'Esperando confirmación', detail: `TX ${hash.slice(0, 10)}…` })
+      showToast({ tone: 'loading', title: t.waiting, detail: `TX ${hash.slice(0, 10)}…` })
       const receipt = await publicClient.waitForTransactionReceipt({ hash })
-      if (receipt.status !== 'success') throw new Error('La transacción fue revertida')
+      if (receipt.status !== 'success') throw new Error(t.reverted)
 
       // Recargar desde la cadena y equipar el personaje recién comprado.
       const list = await refreshOwned()
       const fresh = list.filter((c) => c.artist?.id === artist.id).at(-1)
       if (fresh) selectCharacter(fresh.tokenId)
 
-      showToast({ tone: 'success', title: `${artist.name} es tuyo y ya está equipado`, detail: `TX ${hash.slice(0, 10)}…` }, 8000)
+      showToast({ tone: 'success', title: t.minted(artist.name), detail: `TX ${hash.slice(0, 10)}…` }, 8000)
     } catch (e) {
-      showToast({ tone: 'error', title: 'No se pudo mintear', detail: shortError(e) }, 9000)
+      showToast({ tone: 'error', title: t.mintFailed, detail: shortError(e, t) }, 9000)
     } finally {
       setMinting('')
     }
   }
 
   const inGame = authenticated && screen === 'stage' && selected
-  const variant = !ready || !authenticated ? 'full' : 'calm'
 
   let content
   if (!ready || !authenticated) {
@@ -192,49 +184,39 @@ function App() {
   } else {
     content = (
       <div className="app-shell">
-        <a className="skip-link" href="#app-main">Saltar al contenido</a>
+        <a className="skip-link" href="#app-main">{t.skip}</a>
         <AppHeader screen={screen} onNavigate={setScreen} address={address} onLogout={logout} />
         <main id="app-main" className="app-main">
-          <AnimatePresence mode="wait">
+          <div className="app-wrap">
             {screen === 'workshop' ? (
-              <motion.div key="workshop" {...screenMotion}>
-                <WorkshopView
-                  owned={owned}
-                  ownedStatus={ownedStatus}
-                  mintPrice={mintPrice}
-                  priceStatus={priceStatus}
-                  onRetryPrice={loadPrice}
-                  minting={minting}
-                  onMint={mintArtist}
-                />
-              </motion.div>
+              <WorkshopView
+                owned={owned}
+                ownedStatus={ownedStatus}
+                mintPrice={mintPrice}
+                priceStatus={priceStatus}
+                onRetryPrice={loadPrice}
+                minting={minting}
+                onMint={mintArtist}
+              />
             ) : (
-              <motion.div key="menu" {...screenMotion}>
-                <RosterView
-                  groups={groups}
-                  status={ownedStatus}
-                  selected={selected}
-                  onSelect={selectCharacter}
-                  onRetry={refreshOwned}
-                  onPlay={() => setScreen('stage')}
-                  onShop={() => setScreen('workshop')}
-                />
-              </motion.div>
+              <RosterView
+                groups={groups}
+                status={ownedStatus}
+                selected={selected}
+                onSelect={selectCharacter}
+                onRetry={refreshOwned}
+                onPlay={() => setScreen('stage')}
+                onShop={() => setScreen('workshop')}
+              />
             )}
-          </AnimatePresence>
+          </div>
         </main>
         <Toast toast={toast} onClose={() => setToast(null)} />
       </div>
     )
   }
 
-  return (
-    <>
-      {/* La landing va sin fondo animado (pedido explícito); el juego tiene su propio escenario */}
-      {!inGame && authenticated && ready && <AmbientBackground variant={variant} />}
-      {content}
-    </>
-  )
+  return content
 }
 
 export default App

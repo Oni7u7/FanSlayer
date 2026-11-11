@@ -2,17 +2,19 @@
  * Vista previa SOLO de desarrollo (npm run dev → /dev-preview.html).
  * No entra al build: Vite solo construye index.html.
  * Muestra el menú y el Workshop con datos simulados para revisar cada estado sin iniciar sesión.
- *   ?view=menu|workshop  &state=loading|empty|error|ready  &toast=success|error|loading
+ *   ?view=menu|workshop|stage  &state=loading|empty|error|ready  &toast=success|error|loading|info
+ * El tema y el idioma salen de las preferencias guardadas (botones del header).
  */
 import React, { useState } from 'react'
 import ReactDOM from 'react-dom/client'
-import { MotionConfig } from 'motion/react'
 import '@fontsource/press-start-2p/400.css'
 import '@fontsource-variable/space-grotesk'
-import '@fontsource/vt323/400.css'
+import '@fontsource/chakra-petch/600.css'
+import '@fontsource/chakra-petch/700.css'
+import '@fontsource-variable/jetbrains-mono'
 import '../index.css'
 import '../App.css'
-import AmbientBackground from '../ambient/AmbientBackground'
+import { PrefsProvider } from '../prefs'
 import { AppHeader, RosterView, WorkshopView } from '../app/Screens'
 import { Toast } from '../ui'
 import Stage from '../Stage'
@@ -39,28 +41,27 @@ function Preview() {
   })
   const [selected, setSelected] = useState(state === 'ready' ? mockOwned[2] : null)
   const toastTone = q.get('toast')
-  const toast = toastTone ? { id: 1, tone: toastTone, title: toastTone === 'error' ? 'No se pudo mintear' : 'Michel Jackson es tuyo y ya está equipado', detail: 'Ejemplo de vista previa' } : null
+  const toast = toastTone ? { id: 1, tone: toastTone, title: 'Michel Jackson', detail: 'Ejemplo de vista previa / preview sample' } : null
   const ownedStatus = state === 'ready' || state === 'empty' ? 'ready' : state
   if (view === 'stage') return <Stage character={mockOwned[2]} onBack={() => setView('menu')} />
 
   return (
-    <>
-      <AmbientBackground variant="calm" />
-      <div className="app-shell">
-        <AppHeader screen={view} onNavigate={setView} address={MOCK_ADDRESS} onLogout={() => {}} />
-        <main className="app-main">
+    <div className="app-shell">
+      <AppHeader screen={view} onNavigate={setView} address={MOCK_ADDRESS} onLogout={() => {}} />
+      <main className="app-main">
+        <div className="app-wrap">
           {view === 'workshop' ? (
             <WorkshopView owned={owned.slice(2, 3)} ownedStatus={ownedStatus} mintPrice={10000000000000000n} priceStatus={state === 'error' ? 'error' : state === 'loading' ? 'loading' : 'ready'} onRetryPrice={() => {}} minting="" onMint={() => {}} />
           ) : (
             <RosterView groups={groups} status={ownedStatus} selected={selected} onSelect={(id) => setSelected(owned.find((c) => c.tokenId === id))} onRetry={() => {}} onPlay={() => {}} onShop={() => setView('workshop')} />
           )}
-        </main>
-        <Toast toast={toast} onClose={() => {}} />
-      </div>
-    </>
+        </div>
+      </main>
+      <Toast toast={toast} onClose={() => {}} />
+    </div>
   )
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <MotionConfig reducedMotion="user"><Preview /></MotionConfig>
+  <PrefsProvider><Preview /></PrefsProvider>
 )

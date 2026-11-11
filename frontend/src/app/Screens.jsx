@@ -1,235 +1,202 @@
-import { motion } from 'motion/react'
-import { CheckCircle, GameController, Play, ShoppingBag, SignOut, Storefront, UsersThree } from '@phosphor-icons/react'
+import { CheckCircle, GameController, Play, ShoppingBag, SignOut, Storefront } from '@phosphor-icons/react'
 import { formatEther } from 'viem'
 import { ARTISTS } from '../config'
-import { Address, Button, EmptyState, ErrorState, IconButton, Skeleton } from '../ui'
-
-const list = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } }
-const item = {
-  hidden: { opacity: 0, y: 14 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 280, damping: 26 } },
-}
-
-const TABS = [
-  { id: 'menu', label: 'Personajes', icon: UsersThree },
-  { id: 'workshop', label: 'Workshop', icon: Storefront },
-]
+import { useT } from '../i18n'
+import { Address, Button, EmptyState, ErrorState, IconButton, PrefsControls, Skeleton } from '../ui'
 
 export function AppHeader({ screen, onNavigate, address, onLogout }) {
+  const t = useT().app
+  const tabs = [
+    { id: 'menu', label: t.tabRoster },
+    { id: 'workshop', label: t.tabShop },
+  ]
   return (
     <header className="app-header">
-      <span className="logo">FAN<span>SLAYER</span></span>
-      <nav className="tabs" aria-label="Secciones">
-        {TABS.map((tab) => {
-          const { id, label } = tab
-          const Icon = tab.icon
-          const active = screen === id
-          return (
+      <div className="app-wrap app-header-row">
+        <span className="app-logo">
+          <span className="app-logo-mark" aria-hidden="true" />
+          <span className="app-logo-text">FANSLAYER</span>
+        </span>
+        <nav className="tabs" aria-label={t.sections}>
+          {tabs.map(({ id, label }) => (
             <button
               key={id}
               type="button"
-              className={`tab${active ? ' is-active' : ''}`}
-              aria-current={active ? 'page' : undefined}
+              className="tab"
+              aria-current={screen === id ? 'page' : undefined}
               onClick={() => onNavigate(id)}
             >
-              {active && (
-                <motion.span
-                  layoutId="tab-indicator"
-                  className="tab-indicator"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <Icon size={18} weight="bold" aria-hidden="true" />
-              <span className="tab-label">{label}</span>
+              {label}
             </button>
-          )
-        })}
-      </nav>
-      <div className="wallet">
-        <span className="wallet-chip">
-          <span className="wallet-dot" aria-hidden="true" />
-          <span className="sr-only">Wallet conectada:</span>
-          <Address value={address} />
-        </span>
-        <IconButton label="Cerrar sesión" onClick={onLogout}>
-          <SignOut size={20} weight="bold" />
-        </IconButton>
+          ))}
+        </nav>
+        <div className="app-header-end">
+          <span className="wallet">
+            <span className="sr-only">{t.walletConnected}</span>
+            <Address value={address} />
+          </span>
+          <PrefsControls />
+          <IconButton label={t.logout} onClick={onLogout}>
+            <SignOut size={20} weight="bold" aria-hidden="true" />
+          </IconButton>
+        </div>
       </div>
     </header>
   )
 }
 
-function Portrait({ artist }) {
+function Portrait({ artist, size = 'md' }) {
   return (
-    <span className="portrait">
-      <span className="portrait-light" aria-hidden="true" />
+    <span className={`portrait portrait-${size}`}>
       {artist ? <img src={artist.image} alt="" /> : <span className="portrait-unknown" aria-hidden="true">?</span>}
     </span>
   )
 }
 
 export function RosterView({ groups, status, selected, onSelect, onRetry, onPlay, onShop }) {
+  const t = useT().app
   const loading = status === 'loading' || status === 'idle'
 
   return (
     <section className="view" aria-labelledby="roster-title">
-      <div className="view-head">
-        <div>
-          <h1 id="roster-title" className="t-title">Tus personajes</h1>
-          <p className="t-body">Se leen de la cadena cada vez que entras. Elige con quién sales al escenario.</p>
-        </div>
-      </div>
+      <header className="view-head">
+        <h1 id="roster-title" className="t-title">{t.rosterTitle}</h1>
+        <p className="t-body">{t.rosterSub}</p>
+      </header>
 
       {loading && groups.length === 0 && (
-        <div className="roster-grid" aria-busy="true" aria-label="Cargando tus personajes">
+        <ul className="roster-grid" aria-busy="true" aria-label={t.loadingRoster}>
           {[0, 1, 2].map((i) => (
-            <div key={i} className="char-card is-skeleton">
+            <li key={i} className="char-card is-skeleton">
               <Skeleton className="sk-portrait" />
               <Skeleton className="sk-line" />
               <Skeleton className="sk-line short" />
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
 
       {status === 'error' && (
-        <ErrorState title="No pudimos leer tus NFTs" onRetry={onRetry}>
-          El RPC de Monad Testnet no respondió. Revisa tu conexión y vuelve a intentar.
+        <ErrorState title={t.rosterErrorTitle} onRetry={onRetry}>
+          {t.rosterErrorText}
         </ErrorState>
       )}
 
       {status === 'ready' && groups.length === 0 && (
         <EmptyState
-          icon={<ShoppingBag size={28} weight="bold" />}
-          title="Aún no tienes personajes"
+          icon={<ShoppingBag size={24} weight="bold" />}
+          title={t.emptyTitle}
           action={
             <Button icon={<Storefront size={18} weight="bold" />} onClick={onShop}>
-              Ir al Workshop
+              {t.goShop}
             </Button>
           }
         >
-          Compra un artista en el Workshop por 0.01 MON de testnet y aparecerá aquí.
+          {t.emptyText}
         </EmptyState>
       )}
 
       {groups.length > 0 && (
-        <motion.ul className="roster-grid" variants={list} initial="hidden" animate="show">
+        <ul className="roster-grid">
           {groups.map((g) => {
             const isSelected = !!g.artist && g.tokens.some((c) => c.tokenId === selected?.tokenId)
             const ids = g.tokens.map((c) => `#${c.tokenId}`).join(', ')
             return (
-              <motion.li key={g.key} variants={item}>
-                <motion.button
+              <li key={g.key}>
+                <button
                   type="button"
-                  className={`char-card${isSelected ? ' is-selected' : ''}`}
+                  className="char-card"
                   onClick={() => onSelect(g.tokens[0].tokenId)}
                   disabled={!g.artist}
                   aria-pressed={isSelected}
-                  title={g.artist ? `Jugar con ${g.name} (NFTs ${ids})` : 'Este NFT no tiene sprites en el juego'}
-                  whileHover={g.artist ? { y: -4 } : undefined}
-                  whileTap={g.artist ? { scale: 0.98 } : undefined}
-                  transition={{ type: 'spring', stiffness: 400, damping: 24 }}
+                  title={g.artist ? t.playWith(g.name, ids) : t.noSprites}
                 >
-                  {isSelected && (
-                    <motion.span
-                      layoutId="char-selected"
-                      className="char-selected-ring"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
                   <Portrait artist={g.artist} />
-                  <span className="char-name">{g.name || 'Sin nombre'}</span>
-                  <span className="char-meta">
-                    {g.artist ? (
-                      <>
-                        {g.tokens.length > 1 && <span className="count">×{g.tokens.length}</span>}
-                        <span className="t-mono">{g.tokens.length > 1 ? `${g.tokens.length} NFTs` : ids}</span>
-                      </>
-                    ) : (
-                      'no jugable'
-                    )}
+                  <span className="char-name">{g.name || t.unnamed}</span>
+                  <span className="char-meta t-mono">
+                    {g.artist ? (g.tokens.length > 1 ? t.nfts(g.tokens.length) : ids) : t.notPlayable}
                   </span>
                   {isSelected && (
                     <span className="char-badge">
-                      <CheckCircle size={14} weight="fill" aria-hidden="true" /> Equipado
+                      <CheckCircle size={16} weight="fill" aria-hidden="true" /> {t.equipped}
                     </span>
                   )}
-                </motion.button>
-              </motion.li>
+                </button>
+              </li>
             )
           })}
-        </motion.ul>
+        </ul>
       )}
 
       <div className="play-bar">
-        <div className="play-bar-info">
-          {selected ? (
-            <>
-              <Portrait artist={selected.artist} />
-              <div>
-                <p className="t-label">Sales al escenario con</p>
-                <p className="play-bar-name">
-                  {selected.name} <span className="t-mono">#{selected.tokenId}</span>
-                </p>
-              </div>
-            </>
-          ) : (
-            <p className="t-body">{loading ? 'Cargando tus personajes…' : 'Elige o compra un personaje.'}</p>
-          )}
+        <div className="app-wrap play-bar-row">
+          <div className="play-bar-info">
+            {selected ? (
+              <>
+                <Portrait artist={selected.artist} size="sm" />
+                <div>
+                  <p className="t-label">{t.goingWith}</p>
+                  <p className="play-bar-name">
+                    {selected.name} <span className="t-mono">#{selected.tokenId}</span>
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="t-body">{loading ? t.loadingRoster : t.pickOrBuy}</p>
+            )}
+          </div>
+          <Button icon={<Play size={18} weight="fill" />} onClick={onPlay} disabled={!selected}>
+            {t.play}
+          </Button>
         </div>
-        <Button icon={<Play size={18} weight="fill" />} onClick={onPlay} disabled={!selected}>
-          Jugar
-        </Button>
       </div>
     </section>
   )
 }
 
 export function WorkshopView({ owned, ownedStatus, mintPrice, priceStatus, onRetryPrice, minting, onMint }) {
+  const t = useT().app
   const priceLabel = mintPrice === null ? null : formatEther(mintPrice)
   const allOwned = ownedStatus === 'ready' && ARTISTS.every((a) => owned.some((c) => c.artist?.id === a.id))
 
   return (
     <section className="view" aria-labelledby="shop-title">
-      <div className="view-head">
-        <div>
-          <h1 id="shop-title" className="t-title">Workshop</h1>
-          <p className="t-body">Cada wallet puede tener un NFT de cada artista. Se paga con MON de Monad Testnet.</p>
-        </div>
-      </div>
+      <header className="view-head">
+        <h1 id="shop-title" className="t-title">{t.shopTitle}</h1>
+        <p className="t-body">{t.shopSub}</p>
+      </header>
 
       {priceStatus === 'error' && (
-        <ErrorState title="No pudimos leer el precio" onRetry={onRetryPrice}>
-          El contrato no respondió. Sin precio no se puede mintear; reintenta en unos segundos.
+        <ErrorState title={t.priceErrorTitle} onRetry={onRetryPrice}>
+          {t.priceErrorText}
         </ErrorState>
       )}
 
-      <motion.ul className="shop-grid" variants={list} initial="hidden" animate="show">
+      <ul className="shop-list">
         {ARTISTS.map((artist) => {
           const count = owned.filter((c) => c.artist?.id === artist.id).length
           const checking = ownedStatus !== 'ready'
           return (
-            <motion.li key={artist.id} variants={item} className={`shop-card${count ? ' is-owned' : ''}`}>
-              <div className="shop-stage">
-                <span className="portrait-light" aria-hidden="true" />
-                <img src={artist.image} alt={`${artist.name} en pixel art`} />
-              </div>
+            <li key={artist.id} className="shop-item">
+              <Portrait artist={artist} />
               <div className="shop-info">
                 <h2 className="shop-name">{artist.name}</h2>
-                <p className="shop-price">
+                <p className="shop-price t-mono">
                   {priceStatus === 'ready' ? (
                     <>
-                      <span className="t-mono">{priceLabel}</span> MON <span className="tag">testnet</span>
+                      {priceLabel} MON <span className="shop-net">testnet</span>
                     </>
                   ) : priceStatus === 'error' ? (
-                    <span className="t-body">Precio no disponible</span>
+                    <span className="t-body">{t.priceUnavailable}</span>
                   ) : (
                     <Skeleton className="sk-price" />
                   )}
                 </p>
+              </div>
+              <div className="shop-action">
                 {count > 0 ? (
                   <p className="owned-note">
-                    <CheckCircle size={18} weight="fill" aria-hidden="true" /> En tu colección
+                    <CheckCircle size={18} weight="fill" aria-hidden="true" /> {t.inCollection}
                   </p>
                 ) : (
                   <Button
@@ -238,16 +205,16 @@ export function WorkshopView({ owned, ownedStatus, mintPrice, priceStatus, onRet
                     disabled={(!!minting && minting !== artist.name) || priceStatus !== 'ready' || checking}
                     icon={<GameController size={18} weight="bold" />}
                   >
-                    {minting === artist.name ? 'Minteando' : checking ? 'Revisando' : 'Comprar'}
+                    {minting === artist.name ? t.minting : checking ? t.checking : t.buy}
                   </Button>
                 )}
               </div>
-            </motion.li>
+            </li>
           )
         })}
-      </motion.ul>
+      </ul>
 
-      {allOwned && <p className="t-body center-note">Ya tienes todos los artistas disponibles.</p>}
+      {allOwned && <p className="t-body center-note">{t.allOwned}</p>}
     </section>
   )
 }
