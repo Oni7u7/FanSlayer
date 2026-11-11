@@ -13,7 +13,13 @@
           var t = localStorage.getItem('fanslayer:theme')
           var l = localStorage.getItem('fanslayer:lang')
         } catch (e) {}
-        if (t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        // ?theme=light|dark y ?lang=es|en ganan (útil para compartir un enlace en inglés o en claro)
+        try {
+          var q = new URLSearchParams(location.search)
+          if (q.get('theme') === 'light' || q.get('theme') === 'dark') t = q.get('theme')
+          if (q.get('lang') === 'es' || q.get('lang') === 'en') l = q.get('lang')
+        } catch (e) {}
+        if (t !== 'light' && t !== 'dark') t = 'dark'
         if (l !== 'es' && l !== 'en') l = (navigator.language || 'es').toLowerCase().indexOf('en') === 0 ? 'en' : 'es'
         r.dataset.theme = t
         r.style.colorScheme = t
