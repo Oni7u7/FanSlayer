@@ -1,60 +1,48 @@
 /*
- * Sistema de diseño FanSlayer v3: "Arcade mínimo".
- * Base UI/UX Pro Max: Minimalism & Swiss + tipografía pixel (Press Start 2P / VT323),
- * sombras duras, movimiento sutil. Paleta limitada de consola: noche, hueso, dorado
- * (puntaje y acción principal) y rosa solo para acentos puntuales. Esquinas rectas.
- * Ver design-system/fanslayer/MASTER.md.
+ * Sistema de diseño FanSlayer v5: cybercore limpio (toda la app).
+ * Minimalism & Swiss + capa cybercore: fondo limpio, tinta de alto contraste,
+ * un solo acento azul eléctrico, líneas de 1 px, esquinas rectas, sin sombras
+ * y sin animaciones. Etiquetas, precios y direcciones en monoespaciada.
+ * El tema lo fija el script inline de index.html en <html data-theme> antes de pintar.
  */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* Superficies: sólidas, sin vidrio ni desenfoque */
-  --bg: #0d0f1a;
-  --bg-deep: #07080f;
-  --surface: #161a2b;
-  --surface-2: #1f2438;
-  --surface-glass: #161a2b;
-  --border: #2a3050;
-  --border-strong: #f4efe1;
+  /* Superficies */
+  --bg: #ffffff;
+  --surface: #f5f6f8;
+  --surface-2: #eceef2;
+  --border: #e3e5ea;
+  --border-strong: #0b0c10;
+  --screen: #0b0c10; /* fondo de sprites y capturas: el pixel art viene sobre negro */
 
-  /* Texto */
-  --text: #f4efe1;
-  --text-muted: #a9b0c9;
-  --text-faint: #8a92ad;
+  /* Texto (muted: 6.8:1 sobre blanco) */
+  --text: #0b0c10;
+  --text-muted: #555b68;
 
-  /* Marca (pocos colores, cada uno con un solo trabajo) */
-  --gold: #ffcc4d;          /* acción principal, puntaje, precios */
-  --on-gold: #1a1303;
-  --gold-strong: #c9921a;
-  --pink: #ff5c8a;          /* acento puntual: combo, marca */
-  --on-pink: #1d0710;
-  --cyan: #7fd6ff;          /* información */
-  --leaf: #6fdc8c;          /* éxito, "en tu colección" */
-  --danger: #ff6b6b;
+  /* Un solo acento (6.8:1 sobre blanco) y estados con texto, no solo color */
+  --accent: #1f3bff;
+  --accent-hover: #1630d6;
+  --on-accent: #ffffff;
+  --accent-subtle: #eef0ff;
+  --success: #12723a;
+  --danger: #b4232a;
 
-  --gold-subtle: color-mix(in srgb, var(--gold) 14%, transparent);
-  --pink-subtle: color-mix(in srgb, var(--pink) 16%, transparent);
-  --cyan-subtle: color-mix(in srgb, var(--cyan) 14%, transparent);
-  --leaf-subtle: color-mix(in srgb, var(--leaf) 14%, transparent);
-  --danger-subtle: color-mix(in srgb, var(--danger) 14%, transparent);
+  --ring: var(--accent);
 
-  --ring: var(--gold);
+  /* Tipografía */
+  --font-display: 'Chakra Petch', 'Space Grotesk Variable', system-ui, sans-serif;
+  --font-body: 'Space Grotesk Variable', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
 
-  /* Tipografía: pixel para títulos, VT323 (mono pixel legible) para todo lo demás */
-  --font-display: 'Press Start 2P', 'Courier New', monospace;
-  --font-body: 'VT323', ui-monospace, monospace;
-  --font-mono: 'VT323', ui-monospace, monospace;
-
-  /* VT323 se ve ~70% de su tamaño nominal: la escala sube para que el cuerpo lea como 16 px */
-  --fs-12: 1rem;
-  --fs-14: 1.125rem;
-  --fs-16: 1.375rem;
-  --fs-18: 1.5rem;
-  --fs-20: 1.625rem;
-  --fs-24: 1.875rem;
-  --fs-32: 2.25rem;
-  --fs-display: clamp(1.5rem, 3.6vw, 2.75rem);
-  --fs-title: clamp(1rem, 2vw, 1.375rem);
+  --fs-12: 0.75rem;
+  --fs-14: 0.875rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-32: 2rem;
+  --fs-title: clamp(1.75rem, 3.2vw, 2.25rem);
 
   /* Espaciado (múltiplos de 4/8) */
   --s-4: 4px;
@@ -66,91 +54,40 @@
   --s-48: 48px;
   --s-64: 64px;
   --s-96: 96px;
-  --s-128: 128px;
 
-  /* Radios: rectos, como los pixeles */
-  --r-4: 0;
-  --r-8: 0;
-  --r-12: 0;
-  --r-pill: 0;
+  /* Forma: todo recto */
+  --radius: 0;
 
-  /* Sombras duras de un pixel grande, sin desenfoque */
-  --px: 4px;
-  --shadow-1: var(--px) var(--px) 0 var(--bg-deep);
-  --shadow-2: 6px 6px 0 var(--bg-deep);
-  --glow-gold: var(--px) var(--px) 0 var(--gold-strong);
-
-  /* Movimiento */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-fast: 150ms;
-  --dur: 250ms;
-
-  --max: 1080px;
+  --max: 1120px;
   --nav-h: 64px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) {
-    color-scheme: light;
-    --bg: #eef0f7;
-    --bg-deep: #1a1d33;
-    --surface: #ffffff;
-    --surface-2: #e2e5f0;
-    --surface-glass: #ffffff;
-    --border: #c9cee0;
-    --border-strong: #1a1d33;
+:root[data-theme='dark'] {
+  color-scheme: dark;
 
-    --text: #14172b;
-    --text-muted: #464c68;
-    --text-faint: #5a6080;
+  --bg: #0b0c10;
+  --surface: #12141a;
+  --surface-2: #1a1d25;
+  --border: #262a33;
+  --border-strong: #eef0f4;
+  --screen: #000000;
 
-    --gold: #f2b63a;
-    --on-gold: #1a1303;
-    --gold-strong: #7a5200;
-    --pink: #c4245a;
-    --on-pink: #ffffff;
-    --cyan: #0b6e99;
-    --leaf: #24763a;
-    --danger: #c62828;
-    --ring: #14172b;
-  }
+  --text: #eef0f4;
+  --text-muted: #9ba1ae;
+
+  --accent: #8c9bff;
+  --accent-hover: #a9b4ff;
+  --on-accent: #0b0c10;
+  --accent-subtle: #191d33;
+  --success: #5fd38a;
+  --danger: #ff8a8a;
 }
-
-/* Modo claro elegido con el botón de tema (sobre cualquier preferencia del sistema) */
-:root[data-theme='light'] {
-    color-scheme: light;
-    --bg: #eef0f7;
-    --bg-deep: #1a1d33;
-    --surface: #ffffff;
-    --surface-2: #e2e5f0;
-    --surface-glass: #ffffff;
-    --border: #c9cee0;
-    --border-strong: #1a1d33;
-
-    --text: #14172b;
-    --text-muted: #464c68;
-    --text-faint: #5a6080;
-
-    --gold: #f2b63a;
-    --on-gold: #1a1303;
-    --gold-strong: #7a5200;
-    --pink: #c4245a;
-    --on-pink: #ffffff;
-    --cyan: #0b6e99;
-    --leaf: #24763a;
-    --danger: #c62828;
-    --ring: #14172b;
-}
-
 
 /* Utilidades de texto */
-.t-display { font-family: var(--font-display); font-size: var(--fs-display); line-height: 1.3; }
-.t-title { font-family: var(--font-display); font-size: var(--fs-title); line-height: 1.5; }
-.t-body { font-family: var(--font-body); font-size: var(--fs-16); line-height: 1.3; color: var(--text-muted); }
-.t-lead { font-family: var(--font-body); font-size: var(--fs-20); line-height: 1.3; color: var(--text-muted); }
-.t-label { font-family: var(--font-body); font-size: var(--fs-14); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
-.t-eyebrow { font-family: var(--font-display); font-size: 12px; line-height: 1.6; color: var(--gold); }
-.t-mono { font-family: var(--font-mono); font-size: 1.15em; line-height: 1; }
+.t-title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-title); line-height: 1.15; letter-spacing: -0.01em; }
+.t-body { font-size: var(--fs-16); line-height: 1.6; color: var(--text-muted); }
+.t-label { font-family: var(--font-mono); font-size: var(--fs-12); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.t-mono { font-family: var(--font-mono); }
 
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -158,20 +95,13 @@
 }
 
 .skip-link {
-  position: fixed;
-  top: var(--s-8);
-  left: var(--s-8);
+  position: absolute;
+  left: var(--s-16);
+  top: -100px;
   z-index: 100;
   padding: var(--s-12) var(--s-16);
-  background: var(--gold);
-  color: var(--on-gold);
-  font-family: var(--font-body);
-  font-size: var(--fs-16);
-  transform: translateY(-200%);
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 600;
 }
-.skip-link:focus { transform: none; }
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) .t-eyebrow { color: var(--gold-strong); }
-}
-:root[data-theme='light'] .t-eyebrow { color: var(--gold-strong); }
+.skip-link:focus { top: var(--s-12); }

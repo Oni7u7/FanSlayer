@@ -1,38 +1,32 @@
-import { AnimatePresence, motion } from 'motion/react'
-import { ArrowClockwise, CheckCircle, WarningCircle, X } from '@phosphor-icons/react'
+import { ArrowClockwise, CheckCircle, Info, Moon, Sun, WarningCircle, X } from '@phosphor-icons/react'
+import { usePrefs } from '../prefs'
+import { useT } from '../i18n'
 import './ui.css'
 
-const press = { type: 'spring', stiffness: 400, damping: 22 }
+/*
+ * Componentes base (v5 cybercore limpio). Sin animaciones: los estados cambian al instante
+ * y se distinguen por texto e ícono, no solo por color.
+ */
 
 /** Botón con variantes primary | secondary | ghost, tamaños md | sm y estado de carga. */
-export function Button({
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  icon = null,
-  children,
-  className = '',
-  disabled,
-  href,
-  ...rest
-}) {
-  const Comp = href ? motion.a : motion.button
+export function Button({ variant = 'primary', size = 'md', loading = false, icon = null, children, className = '', disabled, href, ...rest }) {
+  const Comp = href ? 'a' : 'button'
   const isDisabled = disabled || loading
   return (
     <Comp
       href={href}
+      type={href ? undefined : 'button'}
       className={`btn btn-${variant} btn-${size} ${className}`}
       disabled={href ? undefined : isDisabled}
       aria-disabled={isDisabled || undefined}
       aria-busy={loading || undefined}
-      whileHover={isDisabled ? undefined : { scale: 1.03 }}
-      whileTap={isDisabled ? undefined : { scale: 0.97 }}
-      transition={press}
       {...rest}
     >
-      <span className="btn-icon" aria-hidden="true">
-        {loading ? <span className="btn-spinner" /> : icon}
-      </span>
+      {(icon || loading) && (
+        <span className="btn-icon" aria-hidden="true">
+          {loading ? <span className="btn-spinner" /> : icon}
+        </span>
+      )}
       <span className="btn-label">{children}</span>
     </Comp>
   )
@@ -41,18 +35,30 @@ export function Button({
 /** Botón de solo ícono: siempre con aria-label y área táctil de 44 px. */
 export function IconButton({ label, children, className = '', ...rest }) {
   return (
-    <motion.button
-      type="button"
-      aria-label={label}
-      title={label}
-      className={`icon-btn ${className}`}
-      whileHover={{ scale: 1.06 }}
-      whileTap={{ scale: 0.94 }}
-      transition={press}
-      {...rest}
-    >
+    <button type="button" aria-label={label} title={label} className={`icon-btn ${className}`} {...rest}>
       {children}
-    </motion.button>
+    </button>
+  )
+}
+
+/** Selector de idioma (ES/EN) y tema (claro/oscuro), compartido por landing y app. */
+export function PrefsControls() {
+  const { theme, toggleTheme, lang, setLang } = usePrefs()
+  const t = useT()
+  const isDark = theme === 'dark'
+  return (
+    <div className="prefs">
+      <div className="prefs-lang" role="group" aria-label={t.langGroup}>
+        {['es', 'en'].map((code) => (
+          <button key={code} type="button" className="prefs-lang-btn" aria-pressed={lang === code} onClick={() => setLang(code)} lang={code}>
+            {code.toUpperCase()}
+          </button>
+        ))}
+      </div>
+      <IconButton label={isDark ? t.toLight : t.toDark} onClick={toggleTheme} className="prefs-theme">
+        {isDark ? <Sun size={20} weight="bold" aria-hidden="true" /> : <Moon size={20} weight="bold" aria-hidden="true" />}
+      </IconButton>
+    </div>
   )
 }
 
@@ -64,78 +70,60 @@ export function Skeleton({ className = '', style }) {
 /** Estado vacío: dice qué pasa y qué hacer. */
 export function EmptyState({ icon, title, children, action }) {
   return (
-    <motion.div
-      className="state state-empty"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-    >
+    <div className="state">
       {icon && <span className="state-icon" aria-hidden="true">{icon}</span>}
-      <h3 className="state-title">{title}</h3>
+      <h2 className="state-title">{title}</h2>
       {children && <p className="t-body">{children}</p>}
       {action}
-    </motion.div>
+    </div>
   )
 }
 
 /** Estado de error: causa, solución y reintentar. */
 export function ErrorState({ title, children, onRetry }) {
+  const t = useT()
   return (
-    <motion.div
-      className="state state-error"
-      role="alert"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-    >
+    <div className="state state-error" role="alert">
       <span className="state-icon" aria-hidden="true">
-        <WarningCircle size={28} weight="bold" />
+        <WarningCircle size={24} weight="bold" />
       </span>
-      <h3 className="state-title">{title}</h3>
+      <h2 className="state-title">{title}</h2>
       {children && <p className="t-body">{children}</p>}
       {onRetry && (
         <Button variant="secondary" size="sm" icon={<ArrowClockwise size={16} weight="bold" />} onClick={onRetry}>
-          Reintentar
+          {t.app.retry}
         </Button>
       )}
-    </motion.div>
+    </div>
   )
 }
 
-/** Toast: aviso temporal anclado abajo. tone = success | error | info */
+const TOAST_ICONS = {
+  error: <WarningCircle size={20} weight="bold" />,
+  success: <CheckCircle size={20} weight="bold" />,
+  info: <Info size={20} weight="bold" />,
+}
+
+/** Toast: aviso anclado abajo. tone = success | error | info | loading */
 export function Toast({ toast, onClose }) {
+  const t = useT()
+  const tone = toast?.tone ?? 'info'
   return (
     <div className="toast-region" aria-live="polite">
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            key={toast.id}
-            className={`toast toast-${toast.tone ?? 'info'}`}
-            role={toast.tone === 'error' ? 'alert' : 'status'}
-            initial={{ opacity: 0, y: 24, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.98 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-          >
-            <span className="toast-icon" aria-hidden="true">
-              {toast.tone === 'error' ? (
-                <WarningCircle size={20} weight="bold" />
-              ) : toast.tone === 'loading' ? (
-                <span className="btn-spinner" />
-              ) : (
-                <CheckCircle size={20} weight="bold" />
-              )}
-            </span>
-            <div className="toast-body">
-              <p className="toast-title">{toast.title}</p>
-              {toast.detail && <p className="toast-detail">{toast.detail}</p>}
-            </div>
-            <IconButton label="Cerrar aviso" className="toast-close" onClick={onClose}>
-              <X size={16} weight="bold" />
-            </IconButton>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {toast && (
+        <div key={toast.id} className={`toast toast-${tone}`} role={tone === 'error' ? 'alert' : 'status'}>
+          <span className="toast-icon" aria-hidden="true">
+            {tone === 'loading' ? <span className="btn-spinner" /> : TOAST_ICONS[tone]}
+          </span>
+          <div className="toast-body">
+            <p className="toast-title">{toast.title}</p>
+            {toast.detail && <p className="toast-detail">{toast.detail}</p>}
+          </div>
+          <IconButton label={t.app.closeToast} className="toast-close" onClick={onClose}>
+            <X size={16} weight="bold" />
+          </IconButton>
+        </div>
+      )}
     </div>
   )
 }
