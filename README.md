@@ -25,6 +25,15 @@ El `.env` nunca se sube: está en `.gitignore`. En Vercel las variables se confi
 
 ## FIX_NOTES
 
+### v6: brutalism + cybercore oscuro (noviembre 2026)
+
+- **Cambios ajenos a medias en el working tree (otra vez):** había un rediseño "cyberpunk" sin commit (Orbitron/Exo 2, `src/game/rules.js`, `design-system/fanslayer-cyberpunk`). No había otra sesión corriendo: todo apunta a que bifurcar o rebobinar una conversación en la app restaura archivos. Se respaldó en `git stash` ("cambios sin commit 19:30") y se partió de `main`.
+- **Ficha técnica pegada al borde:** el reset `.lp dl { margin: 0 }` le ganaba al centrado de `.lp-wrap`; ahora el contenedor siempre se centra.
+- **Enlace del contrato de 29 px de alto:** sube a 44 px de área táctil.
+- **Acento invisible en modo claro:** el borde dorado de la tarjeta equipada y la barra de la pestaña quedaban a ~1.5:1 sobre el fondo claro. Nuevo token `--accent-line` (dorado oscuro en claro).
+- **Probar en claro o en inglés:** como el oscuro es el valor por defecto, se agregaron `?theme=light|dark` y `?lang=es|en` en la URL (sirven también para compartir un enlace en inglés).
+- **Fuente sin uso:** se quitó Chakra Petch.
+
 ### v5: cybercore limpio en toda la app (noviembre 2026)
 
 - **Dos diseños distintos en un mismo sitio:** la landing ya era cybercore claro, pero el menú y el Workshop seguían con el estilo arcade v3 (VT323, dorado, rosa, sombras duras). Ahora hay un solo sistema de tokens (`styles/tokens.css`) y la landing toma sus colores de ahí.
@@ -65,7 +74,18 @@ Cambios del rediseño (noviembre 2026) que corrigen problemas, no solo estética
 
 ## DESIGN_NOTES
 
-### v5: cybercore limpio (actual, toda la app)
+### v6: brutalism + cybercore (actual)
+
+- **Pedido:** estilo brutalism con cybercore, sin animaciones de fondo, más contenido en la landing, bordes muy leves y colores oscuros.
+- **De `--design-system` (UI/UX Pro Max):** estilo Brutalism, patrón Feature-Rich Showcase, efectos "esquinas a 0, tipografía en negrita, grilla visible, bloques grandes" y el anti-patrón "modo claro por defecto". Guardado con la adaptación en `design-system/fanslayer-brutal/MASTER.md`.
+- **Lo que se adaptó y por qué:** el buscador propuso morado #8B5CF6 + Orbitron/Exo 2. El morado es el look genérico "hecho con IA" y Orbitron se ve como cualquier sitio web3, así que se tomó solo su dorado de "valor" como único acento (es el color del puntaje en el juego) y fuentes crudas: Space Grotesk 700 en mayúsculas para títulos y JetBrains Mono para etiquetas, botones, precios y direcciones.
+- **Color:** oscuro por defecto `#09090b`, superficies `#0f1013`/`#15161a`, bordes de 1 px `#1c1d22` (casi invisibles; solo se marcan al pasar el puntero), texto `#ececef`, gris `#8e909a` (6.3:1), dorado `#f5c542`. El claro sigue disponible con el botón de tema.
+- **Landing (más contenido):** hero con titular gigante y cursor de terminal, ficha técnica del contrato (red, precio, límite, contrato), cómo funciona, el juego (combos x5, zombis brutos, drops, controles; todo con números reales del código), artistas (cambian a su frame de ataque al pasar el puntero), "bajo el capó" como prueba verificable en lugar de testimonios inventados, preguntas frecuentes y cierre.
+- **Fondo 3D:** no se tiró el dado ni se montó fondo porque el pedido dice "sin animaciones de fondo".
+- **Movimiento (Motion 13.4.6):** entrada escalonada del hero (eyebrow, título, texto y botones), revelado al hacer scroll una sola vez, press con spring en botones y tarjetas, barra de pestañas con `layoutId`, cambio de pantalla, avisos y acordeón con `AnimatePresence`, crossfade del ícono de tema. El único movimiento continuo es el cursor del hero. `MotionConfig reducedMotion="user"` y el cursor se queda fijo con reducir movimiento. Los hovers de color son instantáneos (rasgo brutalista).
+- **Detalle propio:** índices de sección en mono (`[01]`), etiquetas `// COMBO`, la dirección del contrato truncada en medio, el recorte real de un zombi bruto de una partida y los items del juego.
+
+### v5: cybercore limpio (reemplazado)
 
 - **Pedido:** estilo cybercore con colores limpios, sin animaciones por ahora, menos detalles amontonados, modo claro y oscuro, y ES/EN.
 - **Dirección:** se mantiene la de v4 (Minimalism & Swiss con capa cybercore) y se extiende a las pantallas con sesión. UI/UX Pro Max pide no comunicar estados solo con color: la tarjeta equipada lleva borde del acento más "Equipado" con ícono, la pestaña activa lleva subrayado y `aria-current`, y "En tu colección" lleva ícono y texto.
@@ -103,10 +123,10 @@ Cambios del rediseño (noviembre 2026) que corrigen problemas, no solo estética
 
 ## Checklist de 2 minutos en el celular
 
-1. Abre https://fan-slayer.vercel.app: fondo blanco (o negro si tu teléfono está en modo oscuro), sin animaciones y sin scroll horizontal.
-2. Toca el ícono de luna/sol: cambia a oscuro/claro al instante. Recarga: se queda como lo dejaste.
-3. Toca EN: la landing pasa a inglés. Toca ES para regresar.
-4. Toca "Jugar" e inicia sesión: el diálogo de Privy usa el mismo tema y llegas a "Tus personajes" con el mismo estilo que la landing.
-5. En el menú cambia a EN y al tema contrario: pestañas, tarjetas, la barra de "Jugar" y el Workshop cambian; al recargar se mantienen.
-6. En el Workshop, los artistas que ya tienes dicen "En tu colección"; los demás tienen "Comprar".
-7. Entra al juego: los textos de ayuda, "Menú" y el Game Over salen en el idioma elegido.
+1. Abre https://fan-slayer.vercel.app: fondo casi negro, titular enorme en mayúsculas, sin fondo animado y sin scroll horizontal.
+2. Mira el hero: el texto entra en cascada y solo parpadea el cuadro dorado junto a "EL ESCENARIO.".
+3. Baja la página: ficha del contrato, cómo funciona, el juego, artistas, "bajo el capó", preguntas y cierre. Toca una pregunta: se abre y la anterior se cierra.
+4. Toca el sol: pasa a claro; recarga y se mantiene. Toca EN: todo pasa a inglés. (También puedes abrir `?lang=en` o `?theme=light`.)
+5. Toca el enlace del contrato: abre el explorador de Monad Testnet en otra pestaña.
+6. Toca "Jugar" e inicia sesión: el menú usa el mismo estilo; cambia entre Personajes y Workshop y la barra dorada se desliza.
+7. Toca una tarjeta de personaje: se marca con borde dorado y "EQUIPADO".
