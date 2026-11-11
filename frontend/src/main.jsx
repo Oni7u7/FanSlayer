@@ -4,8 +4,6 @@ import Root from './Root'
 import { PrefsProvider } from './prefs'
 import '@fontsource/press-start-2p/400.css' // solo el HUD del juego
 import '@fontsource-variable/space-grotesk'
-import '@fontsource/chakra-petch/600.css'
-import '@fontsource/chakra-petch/700.css'
 import '@fontsource-variable/jetbrains-mono'
 import './index.css'
 

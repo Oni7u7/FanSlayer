@@ -1,4 +1,5 @@
 import { PrivyProvider } from '@privy-io/react-auth'
+import { MotionConfig } from 'motion/react'
 import App from './App'
 import { PRIVY_APP_ID, monadTestnet } from './config'
 import { usePrefs } from './prefs'
@@ -15,7 +16,9 @@ export default function Root() {
         appearance: { theme },
       }}
     >
-      <App />
+      <MotionConfig reducedMotion="user">
+        <App />
+      </MotionConfig>
     </PrivyProvider>
   )
 }

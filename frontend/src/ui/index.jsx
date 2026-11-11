@@ -1,19 +1,25 @@
+import { AnimatePresence, motion } from 'motion/react'
 import { ArrowClockwise, CheckCircle, Info, Moon, Sun, WarningCircle, X } from '@phosphor-icons/react'
 import { usePrefs } from '../prefs'
 import { useT } from '../i18n'
 import './ui.css'
 
 /*
- * Componentes base (v5 cybercore limpio). Sin animaciones: los estados cambian al instante
- * y se distinguen por texto e ícono, no solo por color.
+ * Componentes base (v6 brutalism + cybercore). Los colores de hover cambian al instante
+ * (rasgo brutalista); Motion solo da respuesta física al presionar y transiciones de
+ * entrada/salida. Los estados se distinguen por texto e ícono, no solo por color.
  */
+const press = { type: 'spring', stiffness: 400, damping: 22 }
+const enter = { duration: 0.22, ease: [0.16, 1, 0.3, 1] }
 
 /** Botón con variantes primary | secondary | ghost, tamaños md | sm y estado de carga. */
 export function Button({ variant = 'primary', size = 'md', loading = false, icon = null, children, className = '', disabled, href, ...rest }) {
-  const Comp = href ? 'a' : 'button'
+  const Comp = href ? motion.a : motion.button
   const isDisabled = disabled || loading
   return (
     <Comp
+      whileTap={isDisabled ? undefined : { scale: 0.97 }}
+      transition={press}
       href={href}
       type={href ? undefined : 'button'}
       className={`btn btn-${variant} btn-${size} ${className}`}
@@ -35,9 +41,17 @@ export function Button({ variant = 'primary', size = 'md', loading = false, icon
 /** Botón de solo ícono: siempre con aria-label y área táctil de 44 px. */
 export function IconButton({ label, children, className = '', ...rest }) {
   return (
-    <button type="button" aria-label={label} title={label} className={`icon-btn ${className}`} {...rest}>
+    <motion.button
+      type="button"
+      aria-label={label}
+      title={label}
+      className={`icon-btn ${className}`}
+      whileTap={{ scale: 0.92 }}
+      transition={press}
+      {...rest}
+    >
       {children}
-    </button>
+    </motion.button>
   )
 }
 
@@ -56,7 +70,18 @@ export function PrefsControls() {
         ))}
       </div>
       <IconButton label={isDark ? t.toLight : t.toDark} onClick={toggleTheme} className="prefs-theme">
-        {isDark ? <Sun size={20} weight="bold" aria-hidden="true" /> : <Moon size={20} weight="bold" aria-hidden="true" />}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={theme}
+            className="prefs-theme-icon"
+            initial={{ opacity: 0, rotate: -90, scale: 0.6 }}
+            animate={{ opacity: 1, rotate: 0, scale: 1 }}
+            exit={{ opacity: 0, rotate: 90, scale: 0.6 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          >
+            {isDark ? <Sun size={20} weight="bold" aria-hidden="true" /> : <Moon size={20} weight="bold" aria-hidden="true" />}
+          </motion.span>
+        </AnimatePresence>
       </IconButton>
     </div>
   )
@@ -70,12 +95,12 @@ export function Skeleton({ className = '', style }) {
 /** Estado vacío: dice qué pasa y qué hacer. */
 export function EmptyState({ icon, title, children, action }) {
   return (
-    <div className="state">
+    <motion.div className="state" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={enter}>
       {icon && <span className="state-icon" aria-hidden="true">{icon}</span>}
       <h2 className="state-title">{title}</h2>
       {children && <p className="t-body">{children}</p>}
       {action}
-    </div>
+    </motion.div>
   )
 }
 
@@ -83,7 +108,7 @@ export function EmptyState({ icon, title, children, action }) {
 export function ErrorState({ title, children, onRetry }) {
   const t = useT()
   return (
-    <div className="state state-error" role="alert">
+    <motion.div className="state state-error" role="alert" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={enter}>
       <span className="state-icon" aria-hidden="true">
         <WarningCircle size={24} weight="bold" />
       </span>
@@ -94,7 +119,7 @@ export function ErrorState({ title, children, onRetry }) {
           {t.app.retry}
         </Button>
       )}
-    </div>
+    </motion.div>
   )
 }
 
@@ -110,8 +135,17 @@ export function Toast({ toast, onClose }) {
   const tone = toast?.tone ?? 'info'
   return (
     <div className="toast-region" aria-live="polite">
-      {toast && (
-        <div key={toast.id} className={`toast toast-${tone}`} role={tone === 'error' ? 'alert' : 'status'}>
+      <AnimatePresence>
+        {toast && (
+        <motion.div
+          key={toast.id}
+          className={`toast toast-${tone}`}
+          role={tone === 'error' ? 'alert' : 'status'}
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 16, transition: { duration: 0.15 } }}
+          transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+        >
           <span className="toast-icon" aria-hidden="true">
             {tone === 'loading' ? <span className="btn-spinner" /> : TOAST_ICONS[tone]}
           </span>
@@ -122,8 +156,9 @@ export function Toast({ toast, onClose }) {
           <IconButton label={t.app.closeToast} className="toast-close" onClick={onClose}>
             <X size={16} weight="bold" />
           </IconButton>
-        </div>
-      )}
+        </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

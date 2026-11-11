@@ -13,7 +13,7 @@ const PrefsContext = createContext(null)
 
 function initialTheme() {
   const t = document.documentElement.dataset.theme
-  return t === 'dark' || t === 'light' ? t : 'light'
+  return t === 'dark' || t === 'light' ? t : 'dark'
 }
 
 function initialLang() {
@@ -36,7 +36,7 @@ export function PrefsProvider({ children }) {
     const root = document.documentElement
     root.dataset.theme = theme
     root.style.colorScheme = theme
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0b0c10' : '#ffffff')
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#09090b' : '#f3f3f0')
   }, [theme])
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-/* Componentes base v5: solo tokens, líneas de 1 px, sin sombras ni animaciones. */
+/* Componentes base v6 brutalism + cybercore: solo tokens, líneas de 1 px tenues, sin sombras. */
 
 /* ---------- Botón ---------- */
 .btn {
@@ -14,19 +14,21 @@
   color: var(--text);
   font-family: var(--font-mono);
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-.btn-sm { min-height: 44px; padding: 0 var(--s-16); }
+.btn-sm { min-height: 44px; padding: 0 var(--s-16); font-size: var(--fs-12); }
 
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .btn-primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
 
-.btn-secondary:hover:not(:disabled) { background: var(--surface-2); }
+.btn-secondary:hover:not(:disabled) { background: var(--surface-2); border-color: var(--text-muted); }
 
 .btn-ghost { border-color: transparent; color: var(--text-muted); }
 .btn-ghost:hover:not(:disabled) { color: var(--text); background: var(--surface-2); }
@@ -36,14 +38,17 @@
 
 .btn-icon { display: inline-flex; }
 
-/* Indicador de carga estático: un cuadro con borde (sin giro, por el pedido de cero animación) */
+/* Indicador de carga: cuadro que gira (se detiene con reducir movimiento) */
 .btn-spinner {
   display: inline-block;
   width: 14px;
   height: 14px;
   border: 2px solid currentColor;
   border-right-color: transparent;
+  animation: spin 0.8s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .btn-spinner { animation: none; } }
 
 /* ---------- Botón de ícono ---------- */
 .icon-btn {
@@ -77,7 +82,8 @@
   cursor: pointer;
 }
 .prefs-lang-btn:hover { color: var(--text); }
-.prefs-lang-btn[aria-pressed='true'] { background: var(--text); color: var(--bg); }
+.prefs-lang-btn[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); }
+.prefs-theme-icon { display: inline-grid; place-items: center; }
 
 /* ---------- Skeleton (estático) ---------- */
 .skeleton { display: block; background: var(--surface-2); }
@@ -95,7 +101,7 @@
 .state-icon { color: var(--text-muted); }
 .state-error { border-color: var(--danger); }
 .state-error .state-icon { color: var(--danger); }
-.state-title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-20); line-height: 1.3; }
+.state-title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-20); line-height: 1.2; text-transform: uppercase; letter-spacing: -0.01em; }
 
 /* ---------- Toast ---------- */
 .toast-region {
@@ -113,7 +119,7 @@
   gap: var(--s-12);
   padding: var(--s-16);
   border: 1px solid var(--border-strong);
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
   pointer-events: auto;
 }

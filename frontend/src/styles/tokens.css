@@ -1,37 +1,39 @@
 /*
- * Sistema de diseño FanSlayer v5: cybercore limpio (toda la app).
- * Minimalism & Swiss + capa cybercore: fondo limpio, tinta de alto contraste,
- * un solo acento azul eléctrico, líneas de 1 px, esquinas rectas, sin sombras
- * y sin animaciones. Etiquetas, precios y direcciones en monoespaciada.
+ * Sistema de diseño FanSlayer v6: brutalism + cybercore (toda la app).
+ * Ver design-system/fanslayer-brutal/MASTER.md (sección "Adaptación FanSlayer").
+ * Oscuro por defecto, bordes de 1 px muy tenues, esquinas a 0, sin sombras,
+ * un solo acento dorado (el del puntaje en el juego). Etiquetas en mono.
  * El tema lo fija el script inline de index.html en <html data-theme> antes de pintar.
  */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
   /* Superficies */
-  --bg: #ffffff;
-  --surface: #f5f6f8;
-  --surface-2: #eceef2;
-  --border: #e3e5ea;
-  --border-strong: #0b0c10;
-  --screen: #0b0c10; /* fondo de sprites y capturas: el pixel art viene sobre negro */
+  --bg: #09090b;
+  --surface: #0f1013;
+  --surface-2: #15161a;
+  --border: #1c1d22;        /* muy tenue */
+  --border-strong: #3a3c45; /* hover / foco de tarjetas */
+  --screen: #000000;        /* fondo de sprites y capturas (pixel art sobre negro) */
 
-  /* Texto (muted: 6.8:1 sobre blanco) */
-  --text: #0b0c10;
-  --text-muted: #555b68;
+  /* Texto */
+  --text: #ececef;
+  --text-muted: #8e909a;    /* 6.3:1 sobre --bg */
 
-  /* Un solo acento (6.8:1 sobre blanco) y estados con texto, no solo color */
-  --accent: #1f3bff;
-  --accent-hover: #1630d6;
-  --on-accent: #ffffff;
-  --accent-subtle: #eef0ff;
-  --success: #12723a;
-  --danger: #b4232a;
+  /* Acento único: dorado. --accent es relleno, --accent-text es para texto/íconos */
+  --accent: #f5c542;
+  --accent-hover: #ffd667;
+  --on-accent: #0b0b0d;
+  --accent-text: #f5c542;
+  --accent-line: #f5c542;   /* bordes e indicadores del acento (≥3:1) */
+  --accent-subtle: #1a1606;
+  --success: #6bd88f;
+  --danger: #ff7a7a;
 
   --ring: var(--accent);
 
   /* Tipografía */
-  --font-display: 'Chakra Petch', 'Space Grotesk Variable', system-ui, sans-serif;
+  --font-display: 'Space Grotesk Variable', system-ui, sans-serif;
   --font-body: 'Space Grotesk Variable', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
 
@@ -42,7 +44,8 @@
   --fs-20: 1.25rem;
   --fs-24: 1.5rem;
   --fs-32: 2rem;
-  --fs-title: clamp(1.75rem, 3.2vw, 2.25rem);
+  --fs-title: clamp(2rem, 4vw, 3rem);
+  --fs-display: clamp(2.75rem, 8.5vw, 7.5rem);
 
   /* Espaciado (múltiplos de 4/8) */
   --s-4: 4px;
@@ -54,37 +57,47 @@
   --s-48: 48px;
   --s-64: 64px;
   --s-96: 96px;
+  --s-128: 128px;
 
   /* Forma: todo recto */
   --radius: 0;
 
-  --max: 1120px;
+  /* Movimiento (solo Motion; los hovers de color son instantáneos) */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --max: 1200px;
   --nav-h: 64px;
 }
 
-:root[data-theme='dark'] {
-  color-scheme: dark;
+:root[data-theme='light'] {
+  color-scheme: light;
 
-  --bg: #0b0c10;
-  --surface: #12141a;
-  --surface-2: #1a1d25;
-  --border: #262a33;
-  --border-strong: #eef0f4;
-  --screen: #000000;
+  --bg: #f3f3f0;
+  --surface: #ebebe7;
+  --surface-2: #e2e2dd;
+  --border: #d6d6d1;
+  --border-strong: #8d8f96;
+  --screen: #0b0b0d;
 
-  --text: #eef0f4;
-  --text-muted: #9ba1ae;
+  --text: #0b0b0d;
+  --text-muted: #4f515a;    /* 7.4:1 */
 
-  --accent: #8c9bff;
-  --accent-hover: #a9b4ff;
-  --on-accent: #0b0c10;
-  --accent-subtle: #191d33;
-  --success: #5fd38a;
-  --danger: #ff8a8a;
+  --accent: #f5c542;
+  --accent-hover: #e8b62c;
+  --on-accent: #0b0b0d;
+  --accent-text: #7a5800;   /* 5.6:1 sobre --bg */
+  --accent-line: #7a5800;
+  --accent-subtle: #f6ecc8;
+  --success: #1d6b37;
+  --danger: #b4232a;
+
+  --ring: #0b0b0d;
 }
 
 /* Utilidades de texto */
-.t-title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-title); line-height: 1.15; letter-spacing: -0.01em; }
+.t-title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-title); line-height: 1; letter-spacing: -0.03em; text-transform: uppercase; }
+.t-display { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-display); line-height: 0.92; letter-spacing: -0.045em; text-transform: uppercase; }
+.t-eyebrow { font-family: var(--font-mono); font-size: var(--fs-12); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-text); }
 .t-body { font-size: var(--fs-16); line-height: 1.6; color: var(--text-muted); }
 .t-label { font-family: var(--font-mono); font-size: var(--fs-12); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
 .t-mono { font-family: var(--font-mono); }
