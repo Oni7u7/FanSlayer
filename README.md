@@ -25,6 +25,17 @@ El `.env` nunca se sube: está en `.gitignore`. En Vercel las variables se confi
 
 ## FIX_NOTES
 
+### v5: cybercore limpio en toda la app (noviembre 2026)
+
+- **Dos diseños distintos en un mismo sitio:** la landing ya era cybercore claro, pero el menú y el Workshop seguían con el estilo arcade v3 (VT323, dorado, rosa, sombras duras). Ahora hay un solo sistema de tokens (`styles/tokens.css`) y la landing toma sus colores de ahí.
+- **Animaciones que no se pidieron:** las pantallas con sesión tenían el fondo animado de túnel pixel y Motion en tarjetas, pestañas, toasts y transiciones. Se quitaron `src/ambient/` y la dependencia `motion`; los estados cambian al instante. El juego conserva su propio movimiento.
+- **ES/EN y tema solo en la landing:** el menú, el Workshop, los avisos del mint y los textos del juego (HUD, Game Over, ayuda) estaban solo en español y sin botones de idioma o tema. Todos los textos viven ahora en `src/i18n.js` y el mismo selector (`PrefsControls`) está en la landing y en la app.
+- **Botones ES/EN de 42 px:** el borde del grupo sumaba altura; ahora es un borde interior y miden 44 px.
+- **Listas desplazadas:** `ul` conservaba el padding del navegador (40 px).
+- **Barra de "Jugar" a 320 px:** la etiqueta se partía y el nombre quedaba debajo del botón; ahora se recorta con puntos suspensivos y el retrato se oculta en pantallas angostas.
+- **Fuente sin uso:** se quitó `@fontsource/vt323`.
+- **Rollback a medias en el working tree:** antes de empezar había cambios sin commit que regresaban `src/` a una versión vieja. Quedaron respaldados en `git stash` ("rollback sin commit 18:52") y se partió de lo que estaba en `main`.
+
 ### v4: landing minimal cybercore (noviembre 2026)
 
 - **Contenido invisible sin scroll:** las secciones de la landing nacían con `opacity: 0` y solo aparecían al hacer scroll; sin JavaScript, en capturas o en algunos bots se veía una página vacía bajo el hero. La landing nueva no oculta nada.
@@ -54,7 +65,17 @@ Cambios del rediseño (noviembre 2026) que corrigen problemas, no solo estética
 
 ## DESIGN_NOTES
 
-### v4: minimal cybercore (actual, landing)
+### v5: cybercore limpio (actual, toda la app)
+
+- **Pedido:** estilo cybercore con colores limpios, sin animaciones por ahora, menos detalles amontonados, modo claro y oscuro, y ES/EN.
+- **Dirección:** se mantiene la de v4 (Minimalism & Swiss con capa cybercore) y se extiende a las pantallas con sesión. UI/UX Pro Max pide no comunicar estados solo con color: la tarjeta equipada lleva borde del acento más "Equipado" con ícono, la pestaña activa lleva subrayado y `aria-current`, y "En tu colección" lleva ícono y texto.
+- **Menos ruido:** sin sombras, sin luces detrás de los retratos, sin punto verde de wallet, sin etiquetas de colores ni contador rosa. Cada tarjeta es una línea de 1 px, el retrato sobre negro (el pixel art viene así) y el texto. El Workshop pasó de tarjetas a filas separadas por líneas.
+- **Color:** claro `#ffffff` / tinta `#0b0c10` / gris `#555b68` / acento `#1f3bff`; oscuro `#0b0c10` / `#eef0f4` / `#9ba1ae` / `#8c9bff`. Éxito y error tienen su propio tono y siempre van con ícono y texto.
+- **Tipografía:** Chakra Petch (títulos), Space Grotesk (cuerpo) y JetBrains Mono (botones, etiquetas, precios y direcciones truncadas en medio). Press Start 2P queda solo para el HUD del juego.
+- **Fondo 3D:** no se tiró el dado ni se montó fondo animado porque el pedido dice explícitamente "sin animaciones ni nada de eso por el momento". También se quitaron las microinteracciones con movimiento; los hovers cambian el borde o el color al instante. Cuando se quieran animaciones, la receta y el componente se pueden agregar sin tocar los tokens.
+- **Detalle propio:** precios del contrato y direcciones en monoespaciada, la etiqueta "testnet" junto a cada precio y los retratos en pixel art de cada artista.
+
+### v4: minimal cybercore (landing)
 
 - **Pedido:** landing minimalista, estilo cybercore, colores claros y blancos limpios, sin animaciones por ahora, con menos elementos amontonados, modo claro y oscuro, y ES/EN.
 - **Dirección:** UI/UX Pro Max devolvió primero "Cyberpunk UI" (negro neón, no recomienda modo claro), que choca con el pedido; se reintentó una vez y se tomó **Minimalism & Swiss** (blanco, alto contraste, sin sombras, radio 0, un solo acento) con una capa cybercore: etiquetas en monoespaciada, líneas de 1 px y esquinas de mira alrededor de la captura.
@@ -64,7 +85,7 @@ Cambios del rediseño (noviembre 2026) que corrigen problemas, no solo estética
 - **Contenido:** hero (titular, una línea, dos botones y la captura real), "Cómo funciona" en tres columnas separadas por líneas, y los dos artistas con precio y límite reales del contrato. Se quitaron el personaje rebotando, el "PRESS START", la barra de progreso y el bloque final.
 - **Detalle propio:** la captura de una partida real con su HUD y los precios/límites del contrato en monoespaciada.
 
-### v3: arcade mínimo (actual)
+### v3: arcade mínimo (reemplazado)
 
 - **Dirección:** UI/UX Pro Max recomendó Minimalism & Swiss con tipografía pixel (Press Start 2P / VT323), sombras duras y movimiento sutil. Paleta de consola limitada: noche, hueso, dorado para la acción principal y el puntaje, y rosa solo como acento. Esquinas rectas, bordes de 2 px y sombras de pixel sin desenfoque. VT323 pasa a ser la fuente de cuerpo, con la escala tipográfica agrandada porque se ve más chica que su tamaño nominal.
 - **Fondo:** el dado sacó la receta 1 (figuras 3D + constelación), que choca con pedir algo menos cargado, así que se tiró una vez más y salió la 4 (túnel warp). Se hizo minimalista: un cielo de pocas estrellas de un pixel que titilan y de 6 a 10 marcos cuadrados que avanzan despacio, en canvas de baja resolución escalado con `image-rendering: pixelated`. Dos capas con parallax distinto (puntero y scroll), mitad de marcos en las pantallas de trabajo, mitad de elementos en celular, pausa con la pestaña oculta y escena quieta con reducir movimiento.
@@ -84,7 +105,8 @@ Cambios del rediseño (noviembre 2026) que corrigen problemas, no solo estética
 
 1. Abre https://fan-slayer.vercel.app: fondo blanco (o negro si tu teléfono está en modo oscuro), sin animaciones y sin scroll horizontal.
 2. Toca el ícono de luna/sol: cambia a oscuro/claro al instante. Recarga: se queda como lo dejaste.
-3. Toca EN: todos los textos pasan a inglés. Recarga: sigue en inglés. Toca ES para regresar.
-4. Baja la página: se ven "Cómo funciona" y los dos artistas sin tener que esperar nada.
-5. Toca el link del contrato: abre el explorador de Monad Testnet en otra pestaña.
-6. Toca "Jugar ahora" e inicia sesión: el diálogo de Privy usa el mismo tema y llegas a tus personajes.
+3. Toca EN: la landing pasa a inglés. Toca ES para regresar.
+4. Toca "Jugar" e inicia sesión: el diálogo de Privy usa el mismo tema y llegas a "Tus personajes" con el mismo estilo que la landing.
+5. En el menú cambia a EN y al tema contrario: pestañas, tarjetas, la barra de "Jugar" y el Workshop cambian; al recargar se mantienen.
+6. En el Workshop, los artistas que ya tienes dicen "En tu colección"; los demás tienen "Comprar".
+7. Entra al juego: los textos de ayuda, "Menú" y el Game Over salen en el idioma elegido.
